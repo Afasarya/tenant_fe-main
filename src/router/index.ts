@@ -70,6 +70,8 @@ import PoSpkForm from "@/pages/pospk/request/form.vue";
 import indexApprovalPoSpk from "@/pages/pospk/approval/request/index.vue";
 import detailApprovalPoSpk from "@/pages/pospk/approval/request/detail.vue";
 import indexJournal from "@/pages/journal/index.vue";
+import indexPayrollTemplate from "@/pages/hcm/payroll/template/index.vue";
+import PayrollTemplateForm from "@/pages/hcm/payroll/template/form.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -899,6 +901,112 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           title: "Payroll | Fico - Manna Jaya",
           crumbs: [{ label: "Payroll Karyawan", link: "" }],
+        },
+      },
+      {
+        path: "payroll_template",
+        name: "PayrollTemplate",
+        component: indexPayrollTemplate,
+        meta: {
+          title: "Payroll Template | Fico - Manna Jaya",
+          crumbs: [
+            { label: "Payroll", link: "" },
+            { label: "Template", link: "" },
+          ],
+        },
+      },
+      {
+        path: "buat_payroll_template",
+        name: "BuatPayrollTemplate",
+        component: PayrollTemplateForm,
+        meta: {
+          title: "Buat Payroll Template | Fico - Manna Jaya",
+          crumbs: [
+            { label: "Payroll", link: "" },
+            { label: "Template", link: "" },
+            { label: "Buat", link: "" },
+          ],
+        },
+      },
+      {
+        path: "edit_payroll_template/:id",
+        name: "EditPayrollTemplate",
+        component: PayrollTemplateForm,
+        meta: {
+          title: "Edit Payroll Template | Fico - Manna Jaya",
+          crumbs: [
+            { label: "Payroll", link: "" },
+            { label: "Template", link: "" },
+            { label: "Edit", link: "" },
+          ],
+        },
+      },
+      {
+        path: "detail_payroll_template/:id",
+        name: "DetailPayrollTemplate",
+        component: PayrollTemplateForm,
+        meta: {
+          title: "Detail Payroll Template | Fico - Manna Jaya",
+          crumbs: [
+            { label: "Payroll", link: "" },
+            { label: "Template", link: "" },
+            { label: "Detail", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/template",
+        name: "DaftarTemplatePayroll",
+        component: indexPayrollTemplate,
+        meta: {
+          title: "Daftar Template Payroll | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Template", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/buat_template",
+        name: "BuatTemplatePayroll",
+        component: PayrollTemplateForm,
+        meta: {
+          title: "Buat Template Payroll | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Template", link: "" },
+            { label: "Buat", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/edit_template/:id",
+        name: "EditTemplatePayroll",
+        component: PayrollTemplateForm,
+        meta: {
+          title: "Edit Template Payroll | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Template", link: "" },
+            { label: "Edit", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/detail_template/:id",
+        name: "DetailTemplatePayroll",
+        component: PayrollTemplateForm,
+        meta: {
+          title: "Detail Template Payroll | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Template", link: "" },
+            { label: "Detail", link: "" },
+          ],
         },
       },
     ],
