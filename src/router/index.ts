@@ -72,6 +72,16 @@ import detailApprovalPoSpk from "@/pages/pospk/approval/request/detail.vue";
 import indexJournal from "@/pages/journal/index.vue";
 import indexPayrollTemplate from "@/pages/hcm/payroll/template/index.vue";
 import PayrollTemplateForm from "@/pages/hcm/payroll/template/form.vue";
+import indexPayrollComponents from "@/pages/hcm/payroll/components/index.vue";
+import PayrollComponentsForm from "@/pages/hcm/payroll/components/form.vue";
+import PayrollTemplateDetail from "@/pages/hcm/payroll/template-detail/index.vue";
+import indexGeneratePayroll from "@/pages/hcm/payroll/generate/index.vue";
+import GeneratePayrollForm from "@/pages/hcm/payroll/generate/form.vue";
+import indexApprovalPayroll from "@/pages/hcm/payroll/approval/index.vue";
+import DetailApprovalPayroll from "@/pages/hcm/payroll/approval/detail.vue";
+import PrintPayrollSlip from "@/pages/hcm/payroll/print/slip.vue";
+import PrintPayrollReport from "@/pages/hcm/payroll/print/report.vue";
+import PayslipTemplate from "@/pages/hcm/payroll/print/PayslipTemplate.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -1009,6 +1019,153 @@ const routes: Array<RouteRecordRaw> = [
           ],
         },
       },
+      {
+        path: "payroll/components",
+        name: "DaftarPayrollComponents",
+        component: indexPayrollComponents,
+        meta: {
+          title: "Daftar Payroll Components | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Components", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/buat_component",
+        name: "BuatPayrollComponent",
+        component: PayrollComponentsForm,
+        meta: {
+          title: "Buat Payroll Component | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Components", link: "" },
+            { label: "Buat", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/edit_component/:id",
+        name: "EditPayrollComponent",
+        component: PayrollComponentsForm,
+        meta: {
+          title: "Edit Payroll Component | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Components", link: "" },
+            { label: "Edit", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/detail_component/:id",
+        name: "DetailPayrollComponent",
+        component: PayrollComponentsForm,
+        meta: {
+          title: "Detail Payroll Component | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Components", link: "" },
+            { label: "Detail", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/template_detail/:id",
+        name: "DetailPayrollTemplateDetail",
+        component: PayrollTemplateDetail,
+        meta: {
+          title: "Detail Payroll Template Detail | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Template Detail", link: "" },
+            { label: "Detail", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/generate",
+        name: "GeneratePayroll",
+        component: indexGeneratePayroll,
+        meta: {
+          title: "Generate Payroll | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Generate", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/generate_form",
+        name: "GeneratePayrollForm",
+        component: GeneratePayrollForm,
+        meta: {
+          title: "Generate Payroll Form | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Generate Form", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/approval",
+        name: "ApprovalPayroll",
+        component: indexApprovalPayroll,
+        meta: {
+          title: "Approval Payroll | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Approval", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/approval_detail/:id",
+        name: "DetailApprovalPayroll",
+        component: DetailApprovalPayroll,
+        meta: {
+          title: "Detail Approval Payroll | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Approval Detail", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/print_slip",
+        name: "PrintPayrollSlip",
+        component: PrintPayrollSlip,
+        meta: {
+          title: "Print Payroll Slip | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Print Slip", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/print_report",
+        name: "PrintPayrollReport",
+        component: PrintPayrollReport,
+        meta: {
+          title: "Print Payroll Report | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Print Report", link: "" },
+          ],
+        },
+      },
     ],
   },
   {
@@ -1483,36 +1640,6 @@ const routes: Array<RouteRecordRaw> = [
       },
     ],
   },
-  // {
-  //   path: "/p3",
-  //   component: BodyView,
-  //   children: [
-  //     {
-  //       path: "daftar_p3",
-  //       name: "DaftarP3",
-  //       component: maintenanceView,
-  //       meta: {
-  //         title: "Daftar P3 | Fico - Manna Jaya",
-  //       },
-  //     },
-  //     {
-  //       path: "approval",
-  //       name: "ApprovalP3",
-  //       component: maintenanceView,
-  //       meta: {
-  //         title: "Approval P3 | Fico - Manna Jaya",
-  //       },
-  //     },
-  //     {
-  //       path: "voucher",
-  //       name: "VoucherP3",
-  //       component: maintenanceView,
-  //       meta: {
-  //         title: "Voucher P3 | Fico - Manna Jaya",
-  //       },
-  //     },
-  //   ],
-  // },
   {
     path: "/jurnal",
     component: BodyView,

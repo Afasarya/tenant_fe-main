@@ -140,69 +140,47 @@ export const menuUser: MenuItem[] = [
       },
     ],
   },
-  // {
-  //   title: "Form P3",
-  //   icon: "stroke-support-tickets",
-  //   icon1: "fill-support-tickets",
-  //   type: "sub",
-  //   badgeType: "light-primary",
-  //   active: false,
-  //   isPinned: false,
-  //   children: [
-  //     {
-  //       path: "/pembayaran/permintaan",
-  //       title: "Permintaan",
-  //       type: "link",
-  //     },
-  //     {
-  //       path: "/pembayaran/approval",
-  //       title: "Pengesahan",
-  //       type: "link",
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: "POSPK",
-  //   icon: "stroke-support-tickets",
-  //   icon1: "fill-support-tickets",
-  //   type: "sub",
-  //   badgeType: "light-primary",
-  //   active: false,
-  //   isPinned: false,
-  //   children: [
-  //     {
-  //       path: "/pospk/list",
-  //       title: "Daftar",
-  //       type: "link",
-  //     },
-  //     {
-  //       path: "/pospk/approval",
-  //       title: "Pengesahan",
-  //       type: "link",
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: "Rekomendasi Harga",
-  //   icon: "stroke-form",
-  //   icon1: "fill-form",
-  //   type: "sub",
-  //   badgeType: "light-primary",
-  //   active: false,
-  //   isPinned: false,
-  //   children: [
-  //     {
-  //       path: "/rekomendasi/daftar",
-  //       title: "Daftar",
-  //       type: "link",
-  //     },
-  //     {
-  //       path: "/rekomendasi/approval",
-  //       title: "Pengesahan",
-  //       type: "link",
-  //     },
-  //   ],
-  // },
+  {
+    title: "Penggajian",
+    icon: "stroke-bonus-kit",
+    icon1: "fill-bonus-kit",
+    type: "sub",
+    badgeType: "light-primary",
+    active: false,
+    isPinned: false,
+    children: [
+      {
+        path: "/hcm/payroll/template",
+        title: "Template Payroll",
+        type: "link",
+      },
+      {
+        path: "/hcm/payroll/components",
+        title: "Komponen Payroll",
+        type: "link",
+      },
+      {
+        path: "/hcm/payroll/generate",
+        title: "Generate Payroll",
+        type: "link",
+      },
+      {
+        path: "/hcm/payroll/approval",
+        title: "Approval Payroll",
+        type: "link",
+      },
+      {
+        path: "/hcm/payroll/print_slip",
+        title: "Cetak Slip Gaji",
+        type: "link",
+      },
+      {
+        path: "/hcm/payroll/print_report",
+        title: "Cetak Laporan Payroll",
+        type: "link",
+      },
+    ],
+  },
   {
     path: "/jurnal/daftar",
     title: "Jurnal",

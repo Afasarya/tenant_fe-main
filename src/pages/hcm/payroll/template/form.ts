@@ -5,13 +5,15 @@ interface PayrollTemplate {
   description: string;
   effective_date: string;
   status: boolean;
+  is_active: number;
 }
 
 export let forms = ref<PayrollTemplate>({
   name: "",
   description: "",
   effective_date: "",
-  status: true
+  status: true,
+  is_active: 1
 });
 
 export let formSubmitted = ref<boolean>(false);

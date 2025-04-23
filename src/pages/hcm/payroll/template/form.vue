@@ -7,6 +7,18 @@
       novalidate
       @submit.prevent="onSubmit()"
     >
+      <div class="col-12 d-flex justify-content-between align-items-center">
+        <h4>Template Payroll</h4>
+        <button
+          v-if="mode === 'detail'"
+          type="button"
+          class="btn btn-primary"
+          @click="viewTemplateDetail"
+        >
+          Lihat Detail Komponen
+        </button>
+      </div>
+
       <div class="col-12">
         <label class="form-label"> Nama Template </label>
         <BaseInput
@@ -92,7 +104,7 @@
             <h5 class="modal-title" id="componentModalLabel">{{ modalTitle }}</h5>
             <button
               type="button"
-              class="btn-close"
+              class="btn btn-close"
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
@@ -266,7 +278,7 @@ const componentTableConfig = reactive<{
 });
 
 const onBack = () => {
-  router.push("/hcm/payroll/template");
+  router.push({ name: "DaftarTemplatePayroll" });
 };
 
 const disabledInput = computed(() => {
@@ -274,11 +286,11 @@ const disabledInput = computed(() => {
 });
 
 const onCreate = async (payload: any) => {
-  return await post("/payroll/components_template/store", { ...payload });
+  return await post("/payroll_component_template/store", { ...payload });
 };
 
 const onUpdate = async (payload: any, id: any) => {
-  return await put(`/payroll/components_template/update/${id}`, { ...payload });
+  return await put(`/payroll_component_template/update/${id}`, { ...payload });
 };
 
 const onSubmit = async () => {
@@ -286,6 +298,7 @@ const onSubmit = async () => {
   forms.value = {
     ...forms.value,
     effective_date: dayjs(effectiveDate.value).format("YYYY-MM-DD"),
+    is_active: forms.value.status ? 1 : 0  // Convert boolean status to numeric is_active
   };
 
   const check = validate();
@@ -297,7 +310,7 @@ const onSubmit = async () => {
 
     if (success) {
       showSuccessToast(message ?? "Data template payroll berhasil disimpan");
-      setTimeout(() => router.push("/hcm/payroll/template"), 1000);
+      setTimeout(() => router.push({ name: "DaftarTemplatePayroll" }), 1000);
     } else showErrorToast(message ?? "Gagal menyimpan data");
     isSubmitting.value = false;
   } else isSubmitting.value = false;
@@ -317,17 +330,22 @@ const resetState = () => {
     description: "",
     effective_date: "",
     status: true,
+    is_active: 1,
   };
   formSubmitted.value = false;
 };
 
 const fetchDetail = async () => {
   loading.value = true;
-  const { data, success, message } = await get(`/payroll/components_template/${id.value}`);
+  // Fix API route by using show/ endpoint according to POSTMAN collection
+  const { data, success, message } = await get(`/payroll_component_template/show/${id.value}`);
   if (success) {
     forms.value = {
-      ...data,
-      status: data?.status === 1,
+      name: data?.name || "",
+      description: data?.description || "", 
+      effective_date: data?.effective_date || "",
+      status: data?.is_active === 1,
+      is_active: data?.is_active || 1
     };
     if (data?.effective_date) {
       effectiveDate.value = new Date(data.effective_date);
@@ -340,14 +358,15 @@ const fetchDetail = async () => {
 };
 
 const fetchPayrollComponents = async () => {
-  const { data, success } = await get("/payroll/components/search");
+  const { data, success } = await get("/payroll_component/search");
   if (success) componentList.value = data;
 };
 
 // Component Methods
 const fetchTemplateComponents = async () => {
   componentTableConfig.loading = true;
-  const { data, success, message } = await get(`/payroll/components_template/detail/${id.value}`);
+  // Change from /payroll_component_template/detail/{id} to /payroll_component_detail/{id}
+  const { data, success, message } = await get(`/payroll_component_detail/${id.value}`);
   if (success) {
     componentTableConfig.items = data?.data?.map((item: any) => {
       return {
@@ -402,7 +421,8 @@ const onEditComponent = (componentId: string | number) => {
 };
 
 const onDeleteComponent = async (componentId: string | number) => {
-  return await remove(`/payroll/components_template/detail/delete/${componentId}`);
+  // Change from /payroll_component_template/detail/delete/{id} to match Postman collection
+  return await remove(`/payroll_component_detail/delete/${componentId}`);
 };
 
 const saveComponent = async () => {
@@ -418,9 +438,11 @@ const saveComponent = async () => {
     
     let response;
     if (isEditingComponent.value) {
-      response = await put(`/payroll/components_template/detail/update/${componentForm.value.id}`, payload);
+      // Update component detail - fixed endpoint
+      response = await put(`/payroll_component_detail/update/${componentForm.value.id}`, payload);
     } else {
-      response = await post("/payroll/components_template/detail/store", payload);
+      // Store component detail - fixed endpoint
+      response = await post("/payroll_component_detail/store", payload);
     }
     
     if (response.success) {
@@ -439,6 +461,10 @@ const onChangeComponentPagination = (page: number, perPage: number) => {
   componentTableConfig.pagination.page = page;
   componentTableConfig.pagination.pageSize = perPage;
   fetchTemplateComponents();
+};
+
+const viewTemplateDetail = () => {
+  router.push(`/hcm/payroll/template-detail/${id.value}`);
 };
 
 onMounted(async () => {

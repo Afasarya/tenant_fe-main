@@ -17,4 +17,26 @@ const showErrorToast = (message: string, duration?: number) => {
   });
 };
 
-export { showSuccessToast, showErrorToast };
+// Add useToast for backward compatibility with components that use it
+const useToast = () => {
+  return {
+    success: showSuccessToast,
+    error: showErrorToast,
+    info: (message: string, duration?: number) => {
+      toast.info(message || "", {
+        hideProgressBar: true,
+        autoClose: duration || 4000,
+        theme: "colored",
+      });
+    },
+    warning: (message: string, duration?: number) => {
+      toast.warning(message || "", {
+        hideProgressBar: true,
+        autoClose: duration || 4000,
+        theme: "colored",
+      });
+    }
+  };
+};
+
+export { showSuccessToast, showErrorToast, useToast };

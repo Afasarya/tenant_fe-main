@@ -139,18 +139,33 @@ export const menu: MenuItem[] = [
     isPinned: false,
     children: [
       {
-        path: "/gaji/data_penggajian",
-        title: "Data Penggajian",
+        path: "/hcm/payroll/template",
+        title: "Template Payroll",
         type: "link",
       },
       {
-        path: "/gaji/proses_penggajian",
-        title: "Proses Penggajian",
+        path: "/hcm/payroll/components",
+        title: "Komponen Payroll",
         type: "link",
       },
       {
-        path: "/gaji/pengaturan",
-        title: "Pengaturan Penggajian",
+        path: "/hcm/payroll/generate",
+        title: "Generate Payroll",
+        type: "link",
+      },
+      {
+        path: "/hcm/payroll/approval",
+        title: "Approval Payroll",
+        type: "link",
+      },
+      {
+        path: "/hcm/payroll/print_slip",
+        title: "Cetak Slip Gaji",
+        type: "link",
+      },
+      {
+        path: "/hcm/payroll/print_report",
+        title: "Cetak Laporan Payroll",
         type: "link",
       },
     ],

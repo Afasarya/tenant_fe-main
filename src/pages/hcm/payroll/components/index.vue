@@ -8,7 +8,7 @@
       @edit="onEdit"
       @view="onView"
       @update-pagination="onChangePagination"
-      @fetch="fetchPayrollTemplateList()"
+      @fetch="fetchPayrollComponentList()"
     />
   </div>
 </template>
@@ -17,7 +17,6 @@ import { defineAsyncComponent, reactive, computed, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import useAxios from "@/composables/axios";
 import { showErrorToast } from "@/composables/toast";
-import dayjs from "dayjs";
 
 const Table = defineAsyncComponent(
   () => import("@/components/common/Table.vue")
@@ -27,13 +26,14 @@ const router = useRouter();
 const { get, remove } = useAxios();
 
 const tableColumns = {
-  name: { label: "Nama Template" },
+  name: { label: "Nama Komponen" },
   description: { label: "Deskripsi" },
-  effective_date: { label: "Tanggal Efektif" },
+  type_component: { label: "Tipe" },
+  is_pajak: { label: "Kena Pajak" },
   status: { label: "Status" },
 };
 const tableConfig = reactive({
-  buttonName: "Tambah Template Payroll",
+  buttonName: "Tambah Komponen Payroll",
   items: [],
   columns: tableColumns,
   pagination: {
@@ -48,46 +48,44 @@ const querySearch = ref("");
 
 const onSearch = (query: string) => {
   querySearch.value = query;
-  fetchPayrollTemplateList();
+  fetchPayrollComponentList();
 };
 const onAdd = () => {
-  router.push({ name: "BuatTemplatePayroll" });
+  router.push({ name: "BuatPayrollComponent" });
 };
 const onEdit = (id: string | number) => {
-  router.push(`/hcm/payroll/edit_template/${id}`);
+  router.push(`/hcm/payroll/edit_component/${id}`);
 };
 const onView = (id: string | number) => {
-  router.push(`/hcm/payroll/detail_template/${id}`);
+  router.push(`/hcm/payroll/detail_component/${id}`);
 };
 const onDelete = async (id: string | number) => {
-  return await remove(`/payroll_component_template/delete/${id}`);
+  return await remove(`/payroll_component/delete/${id}`);
 };
 const onChangePagination = (page: number, perPage: number) => {
   tableConfig.pagination.page = page;
   tableConfig.pagination.pageSize = perPage;
 
-  fetchPayrollTemplateList();
+  fetchPayrollComponentList();
 };
-const fetchPayrollTemplateList = async () => {
+const fetchPayrollComponentList = async () => {
   tableConfig.loading = true;
 
-  const { data, message, success } = await get("/payroll_component_template", {
+  const { data, message, success } = await get("/payroll_component", {
     params: payload.value,
   });
 
   if (success) {
-    tableConfig.items =
-      data?.data?.map((item: any) => {
-        return {
-          id: item.id,
-          name: item.name || "",
-          description: item.description || "-",
-          effective_date: item.effective_date
-            ? dayjs(item.effective_date).format("DD MMM YYYY")
-            : "-",
-          status: item.is_active === 1 ? "Aktif" : "Tidak Aktif"
-        };
-      }) ?? [];
+    tableConfig.items = data?.data?.map((item: any) => {
+      return {
+        id: item.id,
+        name: item.name || "",
+        description: item.description || "-",
+        type_component: item.type_component === 'debit' ? 'Potongan' : 'Pendapatan',
+        status: item.status === 'active' ? "Aktif" : "Tidak Aktif",
+        is_pajak: item.is_pajak === 1 ? "Ya" : "Tidak"
+      };
+    }) ?? [];
     tableConfig.pagination.totalData = data?.total ?? 1;
     tableConfig.pagination.totalPage = data?.last_page ?? 1;
   } else showErrorToast(message ?? "Gagal load data");
@@ -103,7 +101,7 @@ const payload = computed(() => {
   };
 });
 
-onMounted(() => fetchPayrollTemplateList());
+onMounted(() => fetchPayrollComponentList());
 </script>
 
 <style lang="css" scoped>
