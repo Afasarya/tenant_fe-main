@@ -304,7 +304,7 @@ const fetchPayrollDetail = async () => {
   
   try {
     // Using the proper API endpoint for payroll approval details
-    const response = await get(`/payroll/show/${payrollId.value}`);
+    const response = await get(`/payroll_draft/show/${payrollId.value}`);
     if (response.success) {
       const data = response.data;
       
@@ -380,7 +380,7 @@ const approvePayroll = async () => {
       submitting.value = true;
       
       try {
-        // Changed to the proper approval endpoint format based on other approval patterns
+        // Changed to the proper approval endpoint format based on Postman collection
         const response = await put(`/payroll_draft/approve/${payrollId.value}`, {
           notes: notes.value,
         });
@@ -427,7 +427,7 @@ const rejectPayroll = async () => {
       submitting.value = true;
       
       try {
-        // Changed to the proper rejection endpoint format based on other approval patterns
+        // Changed to the proper rejection endpoint format based on Postman collection
         const response = await put(`/payroll_draft/reject/${payrollId.value}`, {
           notes: notes.value,
         });

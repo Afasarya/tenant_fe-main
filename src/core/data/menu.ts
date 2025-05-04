@@ -139,13 +139,14 @@ export const menu: MenuItem[] = [
     isPinned: false,
     children: [
       {
-        path: "/hcm/payroll/template",
-        title: "Template Payroll",
+       
+        path: "/hcm/payroll/components",
+        title: "Komponen Payroll",
         type: "link",
       },
       {
-        path: "/hcm/payroll/components",
-        title: "Komponen Payroll",
+        path: "/hcm/payroll/template",
+        title: "Template Payroll",
         type: "link",
       },
       {

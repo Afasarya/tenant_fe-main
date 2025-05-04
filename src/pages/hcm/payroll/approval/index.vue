@@ -116,8 +116,8 @@ export default defineComponent({
     const fetchPayrolls = async () => {
       loading.value = true;
       try {
-        // Using get from useAxios instead of axios directly for consistent error handling
-        const { data, success, message } = await get("/payroll/approval", {
+        // Using the appropriate payroll approval endpoint from the Postman collection
+        const { data, success, message } = await get("/payroll_draft/approval", {
           params: {
             status: "pending",
             page: 1,

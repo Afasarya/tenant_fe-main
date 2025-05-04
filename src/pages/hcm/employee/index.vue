@@ -69,27 +69,80 @@ const onChangePagination = (page: number, perPage: number) => {
 
   fetchEmployeeList();
 };
+
+// Function to fetch all employees with pagination and search
 const fetchEmployeeList = async () => {
   tableConfig.loading = true;
+  
+  try {
+    const { data, message, success } = await get("/employee", {
+      params: payload.value,
+    });
 
-  const { data, message, success } = await get("/employee", {
-    params: payload.value,
-  });
+    if (success) {
+      tableConfig.items = data?.data?.map((item: any) => {
+        return {
+          id: item.id,
+          name: item.name || "",
+          position_name: item.position_name || "",
+          department_name: item.department_name || "",
+          hire_date: item.hire_date ? dayjs(item.hire_date).format("DD MMM YYYY") : "-",
+          status: item.status === 1 ? "Aktif" : "Tidak Aktif",
+          salary: item.salary || 0,
+          work_location_name: item.work_location_name || "-",
+          workinghour_name: item.workinghour_name || "-"
+        };
+      }) || [];
+      
+      tableConfig.pagination.totalData = data?.total || 0;
+      tableConfig.pagination.totalPage = data?.last_page || 1;
+    } else {
+      showErrorToast(message || "Gagal mengambil data pegawai");
+    }
+  } catch (error) {
+    console.error("Error fetching employee data:", error);
+    showErrorToast("Terjadi kesalahan saat mengambil data pegawai");
+  } finally {
+    tableConfig.loading = false;
+  }
+};
 
-  if (success) {
-    tableConfig.items =
-      data?.data?.map((item: any) => {
-        item.hire_date = item.hire_date
-          ? dayjs(item.hire_date).format("DD MMM YYYY")
-          : "-";
-        item.status = item.status ? "Aktif" : "Tidak Aktif";
-        return item;
-      }) ?? [];
-    tableConfig.pagination.totalData = data?.total ?? 1;
-    tableConfig.pagination.totalPage = data?.last_page ?? 1;
-  } else showErrorToast(message ?? "Gagal load data");
+// Function to get single employee detail
+const fetchEmployeeDetail = async (id: string | number) => {
+  try {
+    loading.value = true;
+    const { data, success, message } = await get(`/employee/${id}`);
+    
+    if (success) {
+      return data;
+    } else {
+      showErrorToast(message || "Gagal mengambil detail pegawai");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching employee detail:", error);
+    showErrorToast("Terjadi kesalahan saat mengambil detail pegawai");
+    return null;
+  } finally {
+    loading.value = false;
+  }
+};
 
-  tableConfig.loading = false;
+// Function to search employees (for dropdown selection)
+const searchEmployees = async (searchQuery = "") => {
+  try {
+    const { data, success } = await get("/employee/search", {
+      params: { search: searchQuery }
+    });
+    
+    if (success) {
+      return data || [];
+    }
+    return [];
+  } catch (error) {
+    console.error("Error searching employees:", error);
+    return [];
+  }
 };
 
 const payload = computed(() => {

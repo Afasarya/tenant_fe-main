@@ -71,26 +71,33 @@ const onChangePagination = (page: number, perPage: number) => {
 const fetchPayrollComponentList = async () => {
   tableConfig.loading = true;
 
-  const { data, message, success } = await get("/payroll_component", {
-    params: payload.value,
-  });
+  try {
+    const { data, message, success } = await get("/payroll_component", {
+      params: payload.value,
+    });
 
-  if (success) {
-    tableConfig.items = data?.data?.map((item: any) => {
-      return {
-        id: item.id,
-        name: item.name || "",
-        description: item.description || "-",
-        type_component: item.type_component === 'debit' ? 'Potongan' : 'Pendapatan',
-        status: item.status === 'active' ? "Aktif" : "Tidak Aktif",
-        is_pajak: item.is_pajak === 1 ? "Ya" : "Tidak"
-      };
-    }) ?? [];
-    tableConfig.pagination.totalData = data?.total ?? 1;
-    tableConfig.pagination.totalPage = data?.last_page ?? 1;
-  } else showErrorToast(message ?? "Gagal load data");
-
-  tableConfig.loading = false;
+    if (success) {
+      tableConfig.items = data?.data?.map((item: any) => {
+        return {
+          id: item.id,
+          name: item.name || "",
+          description: item.description || "-",
+          type_component: item.type_component === 'debit' ? 'Potongan' : 'Pendapatan',
+          status: item.status === 'active' ? "Aktif" : "Tidak Aktif",
+          is_pajak: item.is_pajak === 1 ? "Ya" : "Tidak"
+        };
+      }) ?? [];
+      tableConfig.pagination.totalData = data?.total ?? 1;
+      tableConfig.pagination.totalPage = data?.last_page ?? 1;
+    } else {
+      showErrorToast(message ?? "Gagal mengambil data komponen payroll");
+    }
+  } catch (error) {
+    console.error("Error fetching payroll component data:", error);
+    showErrorToast("Terjadi kesalahan saat mengambil data komponen payroll");
+  } finally {
+    tableConfig.loading = false;
+  }
 };
 
 const payload = computed(() => {

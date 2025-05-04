@@ -19,8 +19,8 @@
         </button>
       </div>
 
-      <div class="col-12">
-        <label class="form-label"> Nama Template </label>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Nama Template <span class="text-danger">*</span></label>
         <BaseInput
           type="text"
           :has-submitted="formSubmitted"
@@ -32,8 +32,8 @@
         />
       </div>
 
-      <div class="col-12">
-        <label class="form-label"> Deskripsi </label>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Deskripsi <span class="text-danger">*</span></label>
         <BaseInput
           type="text"
           :has-submitted="formSubmitted"
@@ -45,8 +45,8 @@
         />
       </div>
 
-      <div class="col-12">
-        <label class="form-label"> Tanggal Efektif </label>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Tanggal Efektif <span class="text-danger">*</span></label>
         <DateTimePicker
           :value="effectiveDate"
           :disabled-input="disabledInput || isSubmitting"
@@ -54,8 +54,8 @@
         />
       </div>
 
-      <div class="col-12">
-        <label class="form-label"> Status </label>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Status</label>
         <BaseSelect
           :disabled-input="disabledInput || isSubmitting"
           error-message="Silahkan pilih status"
@@ -67,110 +67,75 @@
         />
       </div>
 
-      <div class="col-12" v-if="mode !== 'add'">
-        <h4 class="mt-3">Komponen Template</h4>
-        <Table
-          v-bind="componentTableConfig"
-          :deleteFn="onDeleteComponent"
-          @add="onAddComponent"
-          @edit="onEditComponent"
-          @update-pagination="onChangeComponentPagination"
-        >
-          <template #footer v-if="componentTableConfig.items.length > 0">
-            <td colspan="5" class="text-end fw-bold border-top border-bottom">
-              <div class="d-flex gap-4 justify-content-end">
-                <span>Total</span>
-                <span>{{ totalComponent }}</span>
+      <div class="col-md-12">
+        <label class="form-label">Komponen Gaji <span class="text-danger">*</span></label>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card border mb-3">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">Komponen Pendapatan</h6>
               </div>
-            </td>
-          </template>
-        </Table>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-12" v-for="component in pendapatanKomponen" :key="component.id">
+                    <div class="form-check mb-2">
+                      <input 
+                        class="form-check-input" 
+                        type="checkbox" 
+                        :id="`komponen-${component.id}`"
+                        :value="component.id"
+                        v-model="forms.selected_components"
+                        :disabled="disabledInput || component.is_permanent === 1"
+                      >
+                      <label class="form-check-label" :for="`komponen-${component.id}`">
+                        {{ component.name }}
+                        <span class="badge bg-info ms-1" v-if="component.is_permanent === 1">Wajib</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card border mb-3">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">Komponen Potongan</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-12" v-for="component in potonganKomponen" :key="component.id">
+                    <div class="form-check mb-2">
+                      <input 
+                        class="form-check-input" 
+                        type="checkbox" 
+                        :id="`komponen-${component.id}`"
+                        :value="component.id"
+                        v-model="forms.selected_components"
+                        :disabled="disabledInput || component.is_permanent === 1"
+                      >
+                      <label class="form-check-label" :for="`komponen-${component.id}`">
+                        {{ component.name }}
+                        <span class="badge bg-info ms-1" v-if="component.is_permanent === 1">Wajib</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <ButtonForm :is-loading="isSubmitting" :mode="mode" @on-back="onBack" />
     </form>
-
-    <!-- Modal for Component -->
-    <div
-      class="modal fade"
-      id="componentModal"
-      tabindex="-1"
-      aria-labelledby="componentModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="componentModalLabel">{{ modalTitle }}</h5>
-            <button
-              type="button"
-              class="btn btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label">Komponen</label>
-              <BaseSelect
-                :disabled-input="isSubmittingComponent"
-                error-message="Silahkan pilih komponen"
-                :has-submitted="componentFormSubmitted"
-                :options="componentList"
-                :value="componentForm.component_id"
-                required
-                @change="(val: any) => componentForm.component_id = val?.id"
-              />
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Nilai</label>
-              <CurrencyInput
-                v-model="componentForm.value"
-                :has-submitted="componentFormSubmitted"
-                :disabled-input="isSubmittingComponent"
-                required
-                error-message="Silahkan isi nilai komponen"
-              />
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Tipe</label>
-              <BaseSelect
-                :disabled-input="isSubmittingComponent"
-                error-message="Silahkan pilih tipe"
-                :has-submitted="componentFormSubmitted"
-                :options="typeOptions"
-                :value="componentForm.type"
-                required
-                @change="(val: any) => componentForm.type = val?.id"
-              />
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-              :disabled="isSubmittingComponent"
-            >
-              Tutup
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              @click="saveComponent"
-              :disabled="isSubmittingComponent"
-            >
-              {{ isEditingComponent ? 'Ubah' : 'Tambah' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, onMounted, ref, reactive } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref } from "vue";
 import { validate, forms, formSubmitted } from "./form";
 import { useRoute, useRouter } from "vue-router";
 import { showErrorToast, showSuccessToast } from "@/composables/toast";
@@ -178,7 +143,6 @@ import { viewMode } from "@/composables/viewMode";
 import useAxios from "@/composables/axios";
 import { statusOption } from "./data";
 import dayjs from "dayjs";
-import * as bootstrap from 'bootstrap';
 
 const BaseInput = defineAsyncComponent(
   () => import("@/components/common/Input.vue")
@@ -195,12 +159,6 @@ const BaseSelect = defineAsyncComponent(
 const DateTimePicker = defineAsyncComponent(
   () => import("@/components/common/DateTimePicker.vue")
 );
-const CurrencyInput = defineAsyncComponent(
-  () => import("@/components/common/CurrencyInput.vue")
-);
-const Table = defineAsyncComponent(
-  () => import("@/components/common/Table.vue")
-);
 
 const router = useRouter();
 const route = useRoute();
@@ -209,72 +167,17 @@ const loading = ref(false);
 const isSubmitting = ref(false);
 const id = ref(route?.params?.id ?? "");
 const effectiveDate = ref(new Date());
-const { post, get, put, remove } = useAxios();
+const { post, get, put } = useAxios();
 
-// Component Form
-const componentList = ref<any>([]);
-const typeOptions = ref([
-  { id: 'fixed', name: 'Fixed' },
-  { id: 'percentage', name: 'Percentage' }
-]);
+// Component lists
+const payrollComponents = ref<any[]>([]);
 
-const componentForm = ref({
-  id: "",
-  component_id: "",
-  value: 0,
-  type: "fixed"
+const pendapatanKomponen = computed(() => {
+  return payrollComponents.value.filter(comp => comp.type_component === 'kredit');
 });
 
-const componentFormSubmitted = ref(false);
-const isSubmittingComponent = ref(false);
-const isEditingComponent = ref(false);
-const modalTitle = ref("Tambah Komponen");
-
-// Component table
-const componentTableColumns = {
-  component_name: { label: "Nama Komponen" },
-  value: { label: "Nilai" },
-  type: { label: "Tipe" },
-};
-
-type ComponentItem = {
-  id: string | number;
-  component_id: string | number;
-  value: number;
-  type: string;
-  component_name?: string;
-};
-
-const componentTableConfig = reactive<{
-  buttonName: string;
-  items: ComponentItem[];
-  columns: typeof componentTableColumns;
-  pagination: {
-    page: number;
-    pageSize: number;
-    totalData: number;
-    totalPage: number;
-  };
-  loading: boolean;
-  canCreate: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-  hasAction: boolean;
-}>({
-  buttonName: "Tambah Komponen",
-  items: [],
-  columns: componentTableColumns,
-  pagination: {
-    page: 1,
-    pageSize: 10,
-    totalData: 1,
-    totalPage: 1,
-  },
-  loading: false,
-  canCreate: true,
-  canEdit: true,
-  canDelete: true,
-  hasAction: true,
+const potonganKomponen = computed(() => {
+  return payrollComponents.value.filter(comp => comp.type_component === 'debit');
 });
 
 const onBack = () => {
@@ -286,11 +189,32 @@ const disabledInput = computed(() => {
 });
 
 const onCreate = async (payload: any) => {
-  return await post("/payroll_component_template/store", { ...payload });
+  return await post("/payroll_component_template/store", payload);
 };
 
 const onUpdate = async (payload: any, id: any) => {
-  return await put(`/payroll_component_template/update/${id}`, { ...payload });
+  return await put(`/payroll_component_template/update/${id}`, payload);
+};
+
+const fetchPayrollComponents = async () => {
+  try {
+    const { data, success, message } = await get("/payroll_component/search");
+    if (success) {
+      payrollComponents.value = data || [];
+      
+      // Auto-select mandatory components
+      const mandatoryComponentIds = payrollComponents.value
+        .filter(comp => comp.is_permanent === 1)
+        .map(comp => comp.id);
+      
+      forms.value.selected_components = [...mandatoryComponentIds];
+    } else {
+      showErrorToast(message ?? "Gagal mengambil daftar komponen");
+    }
+  } catch (error) {
+    console.error("Error fetching payroll components:", error);
+    showErrorToast("Terjadi kesalahan saat mengambil daftar komponen");
+  }
 };
 
 const onSubmit = async () => {
@@ -298,22 +222,52 @@ const onSubmit = async () => {
   forms.value = {
     ...forms.value,
     effective_date: dayjs(effectiveDate.value).format("YYYY-MM-DD"),
-    is_active: forms.value.status ? 1 : 0  // Convert boolean status to numeric is_active
+    is_active: forms.value.status ? 1 : 0
   };
 
   const check = validate();
   if (check) {
-    const { message, success } =
-      mode.value === "add"
-        ? await onCreate(forms.value)
-        : await onUpdate(forms.value, id.value);
+    try {
+      // Prepare the payload - separate template data and components
+      const { selected_components, ...templateData } = forms.value;
+      
+      let templateResponse;
+      if (mode.value === "add") {
+        templateResponse = await onCreate(templateData);
+      } else {
+        templateResponse = await onUpdate(templateData, id.value);
+      }
 
-    if (success) {
-      showSuccessToast(message ?? "Data template payroll berhasil disimpan");
-      setTimeout(() => router.push({ name: "DaftarTemplatePayroll" }), 1000);
-    } else showErrorToast(message ?? "Gagal menyimpan data");
+      if (templateResponse.success) {
+        // If creating a new template, add the components
+        if (mode.value === "add" && selected_components.length > 0) {
+          const templateId = templateResponse.data.id;
+          
+          // Add each selected component to the template
+          for (const componentId of selected_components) {
+            await post("/payroll_component_detail/store", {
+              template_id: templateId,
+              component_id: componentId,
+              value: 0, // Default value
+              type: "fixed" // Default type
+            });
+          }
+        }
+        
+        showSuccessToast(templateResponse.message ?? "Data template payroll berhasil disimpan");
+        setTimeout(() => router.push({ name: "DaftarTemplatePayroll" }), 1000);
+      } else {
+        showErrorToast(templateResponse.message ?? "Gagal menyimpan data");
+      }
+    } catch (error) {
+      console.error("Error submitting payroll template:", error);
+      showErrorToast("Terjadi kesalahan saat menyimpan data");
+    } finally {
+      isSubmitting.value = false;
+    }
+  } else {
     isSubmitting.value = false;
-  } else isSubmitting.value = false;
+  }
 };
 
 const handleStatus = (val: any) => {
@@ -331,136 +285,45 @@ const resetState = () => {
     effective_date: "",
     status: true,
     is_active: 1,
+    selected_components: []
   };
   formSubmitted.value = false;
 };
 
 const fetchDetail = async () => {
   loading.value = true;
-  // Fix API route by using show/ endpoint according to POSTMAN collection
-  const { data, success, message } = await get(`/payroll_component_template/show/${id.value}`);
-  if (success) {
-    forms.value = {
-      name: data?.name || "",
-      description: data?.description || "", 
-      effective_date: data?.effective_date || "",
-      status: data?.is_active === 1,
-      is_active: data?.is_active || 1
-    };
-    if (data?.effective_date) {
-      effectiveDate.value = new Date(data.effective_date);
-    }
-    // Fetch components
-    fetchTemplateComponents();
-  } else showErrorToast(message ?? "Gagal load data");
-
-  loading.value = false;
-};
-
-const fetchPayrollComponents = async () => {
-  const { data, success } = await get("/payroll_component/search");
-  if (success) componentList.value = data;
-};
-
-// Component Methods
-const fetchTemplateComponents = async () => {
-  componentTableConfig.loading = true;
-  // Change from /payroll_component_template/detail/{id} to /payroll_component_detail/{id}
-  const { data, success, message } = await get(`/payroll_component_detail/${id.value}`);
-  if (success) {
-    componentTableConfig.items = data?.data?.map((item: any) => {
-      return {
-        ...item,
-        value: Number(item.value),
-        component_name: item.component?.name || '-'
+  try {
+    // Fetch template details
+    const { data, success, message } = await get(`/payroll_component_template/show/${id.value}`);
+    if (success && data) {
+      forms.value = {
+        name: data.name || "",
+        description: data.description || "",
+        effective_date: data.effective_date || "",
+        status: data.is_active === 1,
+        is_active: data.is_active || 1,
+        selected_components: []
       };
-    }) || [];
-    componentTableConfig.pagination.totalData = data?.total || 1;
-    componentTableConfig.pagination.totalPage = data?.last_page || 1;
-  } else {
-    showErrorToast(message ?? "Gagal memuat data komponen");
-  }
-  componentTableConfig.loading = false;
-};
-
-const totalComponent = computed(() => {
-  return componentTableConfig.items.filter(item => item.type === 'fixed')
-    .reduce((sum, item) => sum + Number(item.value), 0).toLocaleString('id-ID');
-});
-
-const onAddComponent = () => {
-  componentForm.value = {
-    id: "",
-    component_id: "",
-    value: 0,
-    type: "fixed"
-  };
-  componentFormSubmitted.value = false;
-  isEditingComponent.value = false;
-  modalTitle.value = "Tambah Komponen";
-  
-  const modal = new bootstrap.Modal(document.getElementById('componentModal'));
-  modal.show();
-};
-
-const onEditComponent = (componentId: string | number) => {
-  const component = componentTableConfig.items.find(item => item.id === componentId);
-  if (component) {
-    componentForm.value = {
-      id: String(component.id),
-      component_id: String(component.component_id),
-      value: component.value,
-      type: component.type
-    };
-    isEditingComponent.value = true;
-    modalTitle.value = "Ubah Komponen";
-    
-    const modal = new bootstrap.Modal(document.getElementById('componentModal'));
-    modal.show();
-  }
-};
-
-const onDeleteComponent = async (componentId: string | number) => {
-  // Change from /payroll_component_template/detail/delete/{id} to match Postman collection
-  return await remove(`/payroll_component_detail/delete/${componentId}`);
-};
-
-const saveComponent = async () => {
-  componentFormSubmitted.value = true;
-  
-  if (componentForm.value.component_id && componentForm.value.value) {
-    isSubmittingComponent.value = true;
-    
-    const payload = {
-      ...componentForm.value,
-      template_id: id.value
-    };
-    
-    let response;
-    if (isEditingComponent.value) {
-      // Update component detail - fixed endpoint
-      response = await put(`/payroll_component_detail/update/${componentForm.value.id}`, payload);
+      
+      if (data.effective_date) {
+        effectiveDate.value = new Date(data.effective_date);
+      }
+      
+      // Fetch template components
+      const componentsResponse = await get(`/payroll_component_detail/${id.value}`);
+      if (componentsResponse.success && componentsResponse.data.data) {
+        forms.value.selected_components = componentsResponse.data.data
+          .map((item: any) => item.component_id);
+      }
     } else {
-      // Store component detail - fixed endpoint
-      response = await post("/payroll_component_detail/store", payload);
+      showErrorToast(message ?? "Gagal mengambil detail template");
     }
-    
-    if (response.success) {
-      showSuccessToast(response.message || "Komponen berhasil disimpan");
-      document.getElementById('componentModal')?.querySelector('.btn-close')?.dispatchEvent(new Event('click'));
-      fetchTemplateComponents();
-    } else {
-      showErrorToast(response.message || "Gagal menyimpan komponen");
-    }
-    
-    isSubmittingComponent.value = false;
+  } catch (error) {
+    console.error("Error fetching template:", error);
+    showErrorToast("Terjadi kesalahan saat mengambil detail template");
+  } finally {
+    loading.value = false;
   }
-};
-
-const onChangeComponentPagination = (page: number, perPage: number) => {
-  componentTableConfig.pagination.page = page;
-  componentTableConfig.pagination.pageSize = perPage;
-  fetchTemplateComponents();
 };
 
 const viewTemplateDetail = () => {
@@ -471,11 +334,13 @@ onMounted(async () => {
   resetState();
   const currentRoute = router.currentRoute.value.fullPath;
   mode.value = viewMode(currentRoute);
-
-  if (mode.value !== "add") {
-    fetchDetail();
-  }
   
-  fetchPayrollComponents();
+  // First fetch all payroll components
+  await fetchPayrollComponents();
+  
+  // Then fetch template details if not in add mode
+  if (mode.value !== "add") {
+    await fetchDetail();
+  }
 });
 </script>

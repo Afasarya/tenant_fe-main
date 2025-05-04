@@ -114,8 +114,8 @@
 import { defineComponent, ref, onMounted, computed } from "vue";
 import Breadcrumbs from "@/layout/BreadCrumbs.vue";
 import { useRouter } from "vue-router";
-import axios from "@/plugins/axios";
-import { useToast } from "@/composables/toast";
+import useAxios from "@/composables/axios";
+import { showErrorToast, showSuccessToast } from "@/composables/toast";
 import { formatDate as formatDateUtil, formatCurrency } from "@/composables/dateFormatter";
 
 export default defineComponent({
@@ -125,7 +125,7 @@ export default defineComponent({
   },
   setup() {
     const router = useRouter();
-    const toast = useToast();
+    const { get, remove } = useAxios();
     const loading = ref(false);
     const payrolls = ref<Array<{
       id?: string | number;
@@ -147,17 +147,23 @@ export default defineComponent({
     const fetchPayrolls = async () => {
       loading.value = true;
       try {
-        // Use the correct endpoint from the Postman collection
-        const response = await axios.get("/payroll_draft/index");
-        if (response.data && response.data.success) {
-          payrolls.value = response.data.data || [];
+        // Use the correct endpoint from the Payroll Draft Month section in Postman collection
+        const response = await get("payroll_draft_month", {
+          params: {
+            page: 1,
+            per_page: 100
+          }
+        });
+        
+        if (response && response.success) {
+          payrolls.value = response.data?.data || [];
         } else {
-          toast.error(response.data?.message || "Gagal mengambil data payroll");
+          showErrorToast(response?.message || "Gagal mengambil data payroll");
           payrolls.value = [];
         }
       } catch (error) {
         console.error("Error fetching payrolls:", error);
-        toast.error("Terjadi kesalahan saat mengambil data payroll");
+        showErrorToast("Terjadi kesalahan saat mengambil data payroll");
         payrolls.value = [];
       } finally {
         loading.value = false;
@@ -175,16 +181,17 @@ export default defineComponent({
     const confirmDelete = async (id: string) => {
       if (confirm("Apakah Anda yakin ingin menghapus payroll ini?")) {
         try {
-          const response = await axios.delete(`/payroll/delete/${id}`);
-          if (response.data.success) {
-            toast.success(response.data.message || "Payroll berhasil dihapus");
+          // Use the proper payroll draft deletion endpoint
+          const response = await remove(`payroll_draft_month/delete/${id}`);
+          if (response.success) {
+            showSuccessToast(response.message || "Payroll berhasil dihapus");
             fetchPayrolls(); // Refresh the list after deletion
           } else {
-            toast.error(response.data.message || "Gagal menghapus payroll");
+            showErrorToast(response.message || "Gagal menghapus payroll");
           }
         } catch (error) {
           console.error("Error deleting payroll:", error);
-          toast.error("Terjadi kesalahan saat menghapus payroll");
+          showErrorToast("Terjadi kesalahan saat menghapus payroll");
         }
       }
     };
@@ -194,10 +201,12 @@ export default defineComponent({
     };
 
     const formatDate = (dateString: string) => {
+      if (!dateString) return "-";
       return formatDateUtil(dateString);
     };
 
     const formatNumber = (number: number) => {
+      if (!number && number !== 0) return "0";
       return formatCurrency(number);
     };
 
@@ -212,7 +221,7 @@ export default defineComponent({
         case "draft":
           return "Draft";
         default:
-          return status;
+          return status || "-";
       }
     };
 

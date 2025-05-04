@@ -10,7 +10,19 @@
             </div>
             <div class="card-body">
               <form @submit.prevent="previewPayroll">
+                <!-- Step 1: Select Period and Template -->
                 <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="period">Periode <span class="text-danger">*</span></label>
+                      <DatePicker
+                        type="month"
+                        :disabled-input="isEdit || isPreview"
+                        :value="periodDate"
+                        @change="handleChangePeriod"
+                      />
+                    </div>
+                  </div>
                   <div class="col-md-6">
                     <div class="form-group">
                       <label for="template">Template Payroll <span class="text-danger">*</span></label>
@@ -25,19 +37,10 @@
                       />
                     </div>
                   </div>
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="period">Periode <span class="text-danger">*</span></label>
-                      <DatePicker
-                        type="month"
-                        :disabled-input="isEdit || isPreview"
-                        :value="periodDate"
-                        @change="handleChangePeriod"
-                      />
-                    </div>
-                  </div>
                 </div>
-                <div class="row" v-if="!isPreview">
+                
+                <!-- Step 2: Select Employees -->
+                <div class="row" v-if="!isPreview && form.period && form.template_id">
                   <div class="col-md-12">
                     <div class="form-group">
                       <label>Pegawai</label>
@@ -92,6 +95,7 @@
                   </div>
                 </div>
                 
+                <!-- Step 3: Preview Payroll Data -->
                 <div v-if="isPreview" class="row">
                   <div class="col-md-12">
                     <h6 class="mb-3">Preview Payroll</h6>
@@ -150,7 +154,7 @@
                         Kembali
                       </button>
                       <button 
-                        v-if="!isPreview" 
+                        v-if="!isPreview && form.period && form.template_id" 
                         type="submit" 
                         class="btn btn-primary"
                         :disabled="loading || selectedEmployees.length === 0"
@@ -412,17 +416,18 @@ const breadCrumbs = computed(() => {
   ];
 });
 
-// Fetch templates for dropdown
+// Step 1: Fetch templates for dropdown
 const fetchTemplates = async () => {
   try {
     loading.value = true;
-    // Use the correct API endpoint that works in the template listing
-    const response = await get("/payroll_component_template", {
+    // Use the payroll_component_template endpoint from the Postman collection
+    const response = await get("payroll_component_template", {
       params: {
         // Only get active templates
         is_active: 1
       }
     });
+    
     if (response.success) {
       templates.value = response.data.data || [];
     } else {
@@ -433,6 +438,17 @@ const fetchTemplates = async () => {
     showErrorToast("Terjadi kesalahan saat mengambil data template");
   } finally {
     loading.value = false;
+  }
+};
+
+// Set period first
+const handleChangePeriod = (date: string) => {
+  periodDate.value = new Date(date);
+  form.value.period = dayjs(date).format("YYYY-MM");
+  
+  // Reset employee selection when period changes
+  if (!isEdit.value) {
+    selectedEmployees.value = [];
   }
 };
 
@@ -447,22 +463,22 @@ const handleChangeTemplate = (template: any) => {
   }
 };
 
-// Handle period change
-const handleChangePeriod = (date: string) => {
-  periodDate.value = new Date(date);
-  form.value.period = dayjs(date).format("YYYY-MM");
-};
-
-// Fetch employees based on the selected template
+// Step 2: Fetch employees based on the selected template
 const fetchEmployees = async () => {
-  if (!form.value.template_id) return;
+  if (!form.value.template_id || !form.value.period) return;
   
   loading.value = true;
   try {
-    // Adjust to use your actual API endpoint
-    const response = await get(`/employee/search`);
+    // Use the employee/list endpoint
+    const response = await get("employee", {
+      params: {
+        page: 1,
+        per_page: 100 // Get a reasonable number of employees
+      }
+    });
+    
     if (response.success) {
-      employees.value = response.data || [];
+      employees.value = response.data.data || [];
     } else {
       showErrorToast(response.message || "Gagal mengambil data pegawai");
     }
@@ -489,7 +505,9 @@ const checkEditMode = async () => {
 const fetchPayrollDetails = async (id: string) => {
   loading.value = true;
   try {
-    const response = await get(`/payroll/show/${id}`);
+    // Use the correct endpoint according to Postman collection: payroll_draft_month/{id}
+    const response = await get(`payroll_draft_month/${id}`);
+    
     if (response.success) {
       const data = response.data;
       
@@ -497,17 +515,33 @@ const fetchPayrollDetails = async (id: string) => {
         id: data.id,
         template_id: data.template_id,
         period: data.period,
-        status: data.status,
-        total_amount: data.total_amount,
+        status: data.status || "draft",
+        total_amount: data.total_amount || 0,
       };
       
-      payrollData.value = data.items || [];
-      isPreview.value = true;
+      if (data.period) {
+        periodDate.value = new Date(data.period);
+      }
       
-      // If viewing/editing existing payroll, we set the selected employees
-      if (isEdit.value) {
-        const employeeIds = payrollData.value.map(item => item.id || "");
-        selectedEmployees.value = employeeIds.filter(id => id);
+      // Get the payroll items
+      const itemsResponse = await get(`payroll_draft_employee`, {
+        params: {
+          payroll_draft_month_id: id
+        }
+      });
+      
+      if (itemsResponse.success) {
+        payrollData.value = itemsResponse.data.data || [];
+        
+        // If viewing/editing existing payroll, set the selected employees
+        if (isEdit.value) {
+          const employeeIds = payrollData.value.map(item => item.id || "");
+          selectedEmployees.value = employeeIds.filter(id => id);
+        }
+        
+        isPreview.value = true;
+      } else {
+        showErrorToast(itemsResponse.message || "Gagal mengambil detail payroll");
       }
     } else {
       showErrorToast(response.message || "Gagal mengambil detail payroll");
@@ -522,7 +556,7 @@ const fetchPayrollDetails = async (id: string) => {
   }
 };
 
-// Generate payroll preview
+// Step 3: Generate payroll preview
 const previewPayroll = async () => {
   if (selectedEmployees.value.length === 0) {
     showErrorToast("Pilih minimal satu pegawai");
@@ -537,8 +571,8 @@ const previewPayroll = async () => {
 
   loading.value = true;
   try {
-    // Adjust to use your actual API endpoint
-    const response = await post("/payroll/preview", {
+    // Use payroll_draft_employee/preview endpoint from Postman collection
+    const response = await post("payroll_draft_employee/preview", {
       template_id: form.value.template_id,
       period: form.value.period,
       employee_ids: selectedEmployees.value,
@@ -566,35 +600,53 @@ const savePayroll = async () => {
   loading.value = true;
   
   try {
-    const payload = {
+    // First create or update the payroll_draft_month
+    const monthPayload = {
       id: form.value.id,
       template_id: form.value.template_id,
       period: form.value.period,
       status: form.value.status,
       total_amount: form.value.total_amount,
-      items: payrollData.value,
     };
     
-    let response;
-    if (isEdit.value) {
-      // Adjust to use your actual API endpoint
-      response = await put(`/payroll/update/${form.value.id}`, payload);
-      if (response.success) {
-        showSuccessToast(response.message || "Payroll berhasil diperbarui");
-      } else {
-        showErrorToast(response.message || "Gagal memperbarui payroll");
-      }
+    let monthResponse;
+    let payrollDraftMonthId;
+    
+    if (isEdit.value && form.value.id) {
+      // Update existing payroll draft month
+      monthResponse = await put(`payroll_draft_month/update/${form.value.id}`, monthPayload);
+      payrollDraftMonthId = form.value.id;
     } else {
-      // Adjust to use your actual API endpoint
-      response = await post("/payroll/store", payload);
-      if (response.success) {
-        showSuccessToast(response.message || "Payroll berhasil disimpan");
-      } else {
-        showErrorToast(response.message || "Gagal menyimpan payroll");
+      // Create new payroll draft month
+      monthResponse = await post("payroll_draft_month/store", monthPayload);
+      if (monthResponse.success && monthResponse.data) {
+        payrollDraftMonthId = monthResponse.data.id;
       }
     }
     
-    router.push({ name: "GeneratePayroll" });
+    if (!monthResponse.success || !payrollDraftMonthId) {
+      showErrorToast(monthResponse.message || "Gagal menyimpan data periode payroll");
+      loading.value = false;
+      return;
+    }
+    
+    // Now save the employee payroll data
+    const employeePayload = {
+      payroll_draft_month_id: payrollDraftMonthId,
+      items: payrollData.value.map(item => ({
+        ...item,
+        payroll_draft_month_id: payrollDraftMonthId
+      }))
+    };
+    
+    const employeeResponse = await post("payroll_draft_employee/store", employeePayload);
+    
+    if (employeeResponse.success) {
+      showSuccessToast(employeeResponse.message || "Payroll berhasil disimpan");
+      router.push({ name: "GeneratePayroll" });
+    } else {
+      showErrorToast(employeeResponse.message || "Gagal menyimpan data karyawan payroll");
+    }
   } catch (error) {
     console.error("Error saving payroll:", error);
     showErrorToast("Terjadi kesalahan saat menyimpan data payroll");
@@ -700,18 +752,10 @@ const goBack = () => {
   router.push({ name: "GeneratePayroll" });
 };
 
-// Watch for template change to fetch employees
-watch(() => form.value.template_id, (newValue) => {
-  if (newValue) {
-    fetchEmployees();
-    if (!isEdit.value) {
-      selectedEmployees.value = []; // Reset selected employees when template changes
-    }
-  }
-});
-
 onMounted(() => {
+  // First fetch templates
   fetchTemplates();
+  // Then check if we're in edit mode
   checkEditMode();
 });
 </script>

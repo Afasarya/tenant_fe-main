@@ -168,17 +168,27 @@ const onSubmit = async () => {
   isSubmitting.value = true;
   const check = validate();
   if (check) {
-    const { message, success } =
-      mode.value === "add"
-        ? await onCreate(forms.value)
-        : await onUpdate(forms.value, id.value);
+    try {
+      const { message, success } =
+        mode.value === "add"
+          ? await onCreate(forms.value)
+          : await onUpdate(forms.value, id.value);
 
-    if (success) {
-      showSuccessToast(message ?? "Komponen payroll berhasil disimpan");
-      setTimeout(() => router.push({ name: "DaftarPayrollComponents" }), 1000);
-    } else showErrorToast(message ?? "Gagal menyimpan data");
+      if (success) {
+        showSuccessToast(message ?? "Komponen payroll berhasil disimpan");
+        setTimeout(() => router.push({ name: "DaftarPayrollComponents" }), 1000);
+      } else {
+        showErrorToast(message ?? "Gagal menyimpan data");
+      }
+    } catch (error) {
+      console.error("Error submitting payroll component:", error);
+      showErrorToast("Terjadi kesalahan saat menyimpan data");
+    } finally {
+      isSubmitting.value = false;
+    }
+  } else {
     isSubmitting.value = false;
-  } else isSubmitting.value = false;
+  }
 };
 
 const resetState = () => {
@@ -197,21 +207,29 @@ const resetState = () => {
 
 const fetchDetail = async () => {
   loading.value = true;
-  const { data, success, message } = await get(`/payroll_component/show/${id.value}`);
-  if (success) {
-    forms.value = {
-      name: data?.name || "",
-      description: data?.description || "",
-      type_component: data?.type_component || "kredit",
-      type_value: data?.type_value || "fix",
-      amount: Number(data?.amount) || 0,
-      is_permanent: data?.is_permanent || 1,
-      is_pajak: data?.is_pajak || 0,
-      status: data?.status || "active"
-    };
-  } else showErrorToast(message ?? "Gagal load data");
-
-  loading.value = false;
+  try {
+    const { data, success, message } = await get(`/payroll_component/show/${id.value}`);
+    
+    if (success) {
+      forms.value = {
+        name: data?.name || "",
+        description: data?.description || "",
+        type_component: data?.type_component || "kredit",
+        type_value: data?.type_value || "fix",
+        amount: Number(data?.amount) || 0,
+        is_permanent: data?.is_permanent || 1,
+        is_pajak: data?.is_pajak || 0,
+        status: data?.status || "active"
+      };
+    } else {
+      showErrorToast(message ?? "Gagal mengambil detail komponen payroll");
+    }
+  } catch (error) {
+    console.error("Error fetching payroll component detail:", error);
+    showErrorToast("Terjadi kesalahan saat mengambil detail komponen payroll");
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(async () => {
@@ -219,6 +237,8 @@ onMounted(async () => {
   const currentRoute = router.currentRoute.value.fullPath;
   mode.value = viewMode(currentRoute);
 
-  if (mode.value !== "add") fetchDetail();
+  if (mode.value !== "add") {
+    await fetchDetail();
+  }
 });
 </script>

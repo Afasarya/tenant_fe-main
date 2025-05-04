@@ -6,6 +6,7 @@ interface PayrollTemplate {
   effective_date: string;
   status: boolean;
   is_active: number;
+  selected_components: any[];
 }
 
 export let forms = ref<PayrollTemplate>({
@@ -13,7 +14,8 @@ export let forms = ref<PayrollTemplate>({
   description: "",
   effective_date: "",
   status: true,
-  is_active: 1
+  is_active: 1,
+  selected_components: []
 });
 
 export let formSubmitted = ref<boolean>(false);
