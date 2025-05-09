@@ -46,6 +46,7 @@ const tableConfig = reactive({
   loading: false,
 });
 const querySearch = ref("");
+const loading = ref(false);
 
 const onSearch = (query: string) => {
   querySearch.value = query;

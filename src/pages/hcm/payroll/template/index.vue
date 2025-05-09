@@ -36,7 +36,7 @@ const tableColumns = {
 
 const tableConfig = reactive({
   buttonName: "Tambah Template Payroll",
-  items: [],
+  items: [] as any[],
   columns: tableColumns,
   pagination: {
     page: 1,

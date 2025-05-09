@@ -174,84 +174,105 @@
     </form>
 
     <!-- Edit Payroll Item Modal -->
-    <Modal
-      :show="showEditModal"
-      :title="`Edit Detail Gaji - ${currentEditItem?.name || ''}`"
-      @close="closeEditModal"
+    <div
+      class="modal fade"
+      id="editPayrollModal"
+      tabindex="-1"
+      aria-labelledby="editPayrollModalLabel"
+      aria-hidden="true"
     >
-      <div v-if="currentEditItem" class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Nama Pegawai:</label>
-          <p class="fw-bold">{{ currentEditItem.name }}</p>
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label">NIP:</label>
-          <p class="fw-bold">{{ currentEditItem.employee_number }}</p>
-        </div>
-        
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Gaji Pokok:</label>
-          <CurrencyInput
-            v-model="currentEditItem.base_salary"
-            :disabled-input="false"
-          />
-        </div>
-        
-        <div class="col-12 mb-3">
-          <h6 class="mt-3">Komponen Pendapatan</h6>
-          <div class="row mb-2" v-for="(allowance, index) in currentEditItem.allowances" :key="'allowance-'+index">
-            <div class="col-md-6">
-              <label class="form-label">Nama Komponen:</label>
-              <BaseInput
-                type="text"
-                :value="allowance.name"
-                :disabled-input="true"
-                @change="(val: string) => {}"
-              />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Nilai:</label>
-              <CurrencyInput
-                v-model="allowance.amount"
-                :disabled-input="false"
-              />
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editPayrollModalLabel">
+              Edit Detail Gaji - {{ currentEditItem?.name || "" }}
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <Loader v-if="loadingPayrollDetail" />
+            <div v-else-if="currentEditItem" class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Nama Pegawai:</label>
+                <p class="fw-bold">{{ currentEditItem.name }}</p>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">NIP:</label>
+                <p class="fw-bold">{{ currentEditItem.employee_number }}</p>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Gaji Pokok:</label>
+                <CurrencyInput
+                  v-model="currentEditItem.base_salary"
+                  :disabled-input="isSubmitting"
+                />
+              </div>
+              
+              <div class="col-12 mb-3" v-if="payrollComponents.length > 0">
+                <h6 class="mt-3">Komponen Pendapatan</h6>
+                <div class="row mb-2" v-for="(component, index) in payrollComponents.filter(c => c.type_component === 'kredit')" :key="'kredit-'+index">
+                  <div class="col-md-6">
+                    <label class="form-label">{{ component.name }}</label>
+                  </div>
+                  <div class="col-md-6">
+                    <CurrencyInput
+                      v-model="component.value"
+                      :disabled-input="isSubmitting || component.is_permanent === 1"
+                    />
+                    <small v-if="component.is_permanent === 1" class="text-muted">Komponen tetap</small>
+                  </div>
+                </div>
+                
+                <h6 class="mt-3">Komponen Potongan</h6>
+                <div class="row mb-2" v-for="(component, index) in payrollComponents.filter(c => c.type_component === 'debit')" :key="'debit-'+index">
+                  <div class="col-md-6">
+                    <label class="form-label">{{ component.name }}</label>
+                  </div>
+                  <div class="col-md-6">
+                    <CurrencyInput
+                      v-model="component.value"
+                      :disabled-input="isSubmitting || component.is_permanent === 1"
+                    />
+                    <small v-if="component.is_permanent === 1" class="text-muted">Komponen tetap</small>
+                  </div>
+                </div>
+                
+                <div class="alert alert-info mt-4">
+                  <div class="d-flex justify-content-between">
+                    <strong>Total Gaji:</strong>
+                    <strong>{{ formatCurrency(calculateTotalSalary()) }}</strong>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          
-          <h6 class="mt-3">Komponen Potongan</h6>
-          <div class="row mb-2" v-for="(deduction, index) in currentEditItem.deductions" :key="'deduction-'+index">
-            <div class="col-md-6">
-              <label class="form-label">Nama Komponen:</label>
-              <BaseInput
-                type="text"
-                :value="deduction.name"
-                :disabled-input="true"
-                @change="(val: string) => {}"
-              />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Nilai:</label>
-              <CurrencyInput
-                v-model="deduction.amount"
-                :disabled-input="false"
-              />
-            </div>
+          <div class="modal-footer">
+            <button 
+              type="button" 
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+              :disabled="isSubmitting"
+            >
+              Batal
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-primary"
+              @click="savePayrollItemChanges"
+              :disabled="isSubmitting"
+            >
+              {{ isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan' }}
+            </button>
           </div>
-          
-          <div class="alert alert-info mt-4">
-            <div class="d-flex justify-content-between">
-              <strong>Total Gaji:</strong>
-              <strong>{{ formatCurrency(calculateNetSalary(currentEditItem)) }}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="d-flex justify-content-end mt-3">
-          <button type="button" class="btn btn-secondary me-2" @click="closeEditModal">Batal</button>
-          <button type="button" class="btn btn-primary" @click="savePayrollItemChanges">Simpan Perubahan</button>
         </div>
       </div>
-    </Modal>
+    </div>
   </div>
 </template>
 
@@ -262,6 +283,7 @@ import { showErrorToast, showSuccessToast } from "@/composables/toast";
 import useAxios from "@/composables/axios";
 import { viewMode } from "@/composables/viewMode";
 import dayjs from "dayjs";
+import * as bootstrap from 'bootstrap';
 
 // Components
 const BaseInput = defineAsyncComponent(() => import("@/components/common/Input.vue"));
@@ -269,35 +291,38 @@ const BaseSelect = defineAsyncComponent(() => import("@/components/common/Select
 const DateTimePicker = defineAsyncComponent(() => import("@/components/common/DateTimePicker.vue"));
 const CurrencyInput = defineAsyncComponent(() => import("@/components/common/CurrencyInput.vue"));
 const Loader = defineAsyncComponent(() => import("@/components/common/Loader.vue"));
-const Modal = defineAsyncComponent(() => import("@/components/common/Modal.vue"));
 
 // Router and API
 const router = useRouter();
 const route = useRoute();
-const { get, post } = useAxios();
+const { get, post, put } = useAxios();
 
 // Form state
 const mode = ref(viewMode(route.fullPath));
 const loading = ref(false);
 const loadingEmployees = ref(false);
+const loadingPayrollDetail = ref(false);
 const isSubmitting = ref(false);
 const formSubmitted = ref(false);
 const isPreview = ref(false);
 const periodDate = ref(new Date());
+const editModal = ref<any>(null);
 
 // Data lists
 const templates = ref<any[]>([]);
 const employees = ref<any[]>([]);
 const selectedEmployees = ref<any[]>([]);
 const payrollData = ref<any[]>([]);
+const payrollComponents = ref<any[]>([]);
 
 // Modal and editing
-const showEditModal = ref(false);
 const currentEditItem = ref<any>(null);
 const currentEditIndex = ref<number>(-1);
+const currentPayrollId = ref<string | null>(null);
 
 // Form data
 const form = ref({
+  id: "",
   payroll_component_template_id: "",
   payroll_draft_month: dayjs().format("MM"),
   payroll_draft_year: dayjs().format("YYYY"),
@@ -490,45 +515,161 @@ const previewPayroll = async () => {
 };
 
 // Methods for editing payroll items
-const editPayrollItem = (index: number) => {
+const editPayrollItem = async (index: number) => {
   currentEditIndex.value = index;
   currentEditItem.value = JSON.parse(JSON.stringify(payrollData.value[index]));
-  showEditModal.value = true;
+  
+  // If payroll already has an ID (it's an existing payroll), fetch the detailed components
+  if (currentEditItem.value.id) {
+    await fetchPayrollItemDetails(currentEditItem.value.id);
+    currentPayrollId.value = currentEditItem.value.id;
+  } else {
+    // For new payroll items, use the components from the preview data
+    payrollComponents.value = [
+      ...currentEditItem.value.allowances.map((a: any) => ({
+        id: a.component_id,
+        name: a.name,
+        type_component: 'kredit',
+        value: a.amount,
+        is_permanent: a.fixed ? 1 : 0,
+        type: a.type || 'fixed'
+      })),
+      ...currentEditItem.value.deductions.map((d: any) => ({
+        id: d.component_id,
+        name: d.name,
+        type_component: 'debit',
+        value: d.amount,
+        is_permanent: d.fixed ? 1 : 0,
+        type: d.type || 'fixed'
+      }))
+    ];
+    currentPayrollId.value = null;
+  }
+  
+  // Show modal after data is loaded
+  if (!editModal.value) {
+    editModal.value = new bootstrap.Modal(document.getElementById('editPayrollModal'));
+  }
+  editModal.value.show();
+};
+
+// Fetch payroll item details for editing
+const fetchPayrollItemDetails = async (payrollId: string) => {
+  loadingPayrollDetail.value = true;
+  try {
+    // Use the payroll_draft/show endpoint to get detailed component data
+    const { data, success, message } = await get(`/payroll_draft/show/${payrollId}`);
+    
+    if (success && data) {
+      // Update current edit item with the latest data
+      currentEditItem.value = {
+        ...currentEditItem.value,
+        base_salary: Number(data.base_salary) || 0,
+        id: data.id
+      };
+      
+      // Load the components for editing
+      payrollComponents.value = data.components || [];
+    } else {
+      showErrorToast(message || "Gagal memuat detail komponen gaji");
+    }
+  } catch (error) {
+    console.error("Error fetching payroll item details:", error);
+    showErrorToast("Terjadi kesalahan saat memuat detail komponen gaji");
+  } finally {
+    loadingPayrollDetail.value = false;
+  }
 };
 
 const closeEditModal = () => {
-  showEditModal.value = false;
+  if (editModal.value) {
+    editModal.value.hide();
+  }
   currentEditItem.value = null;
   currentEditIndex.value = -1;
+  currentPayrollId.value = null;
+  payrollComponents.value = [];
 };
 
-const savePayrollItemChanges = () => {
+// Calculate total salary based on base salary and components
+const calculateTotalSalary = () => {
+  if (!currentEditItem.value) return 0;
+  
+  const baseSalary = Number(currentEditItem.value.base_salary) || 0;
+  
+  // Calculate total from allowances (kredit)
+  const totalAllowances = payrollComponents.value
+    .filter(c => c.type_component === 'kredit')
+    .reduce((sum, component) => sum + Number(component.value), 0);
+    
+  // Calculate total from deductions (debit)
+  const totalDeductions = payrollComponents.value
+    .filter(c => c.type_component === 'debit')
+    .reduce((sum, component) => sum + Number(component.value), 0);
+    
+  return baseSalary + totalAllowances - totalDeductions;
+};
+
+const savePayrollItemChanges = async () => {
   if (!currentEditItem.value) return;
   
-  // Recalculate totals
-  const totalAllowances = currentEditItem.value.allowances.reduce(
-    (sum: number, item: any) => sum + Number(item.amount), 0
-  );
+  isSubmitting.value = true;
   
-  const totalDeductions = currentEditItem.value.deductions.reduce(
-    (sum: number, item: any) => sum + Number(item.amount), 0
-  );
-  
-  const netSalary = Number(currentEditItem.value.base_salary) + totalAllowances - totalDeductions;
-  
-  // Update the item with new calculations
-  const updatedItem = {
-    ...currentEditItem.value,
-    total_allowances: totalAllowances,
-    total_deductions: totalDeductions,
-    net_salary: netSalary
-  };
-  
-  // Update the item in the payroll data array
-  payrollData.value[currentEditIndex.value] = updatedItem;
-  
-  // Close modal
-  closeEditModal();
+  try {
+    // Calculate totals
+    const totalAllowances = payrollComponents.value
+      .filter(c => c.type_component === 'kredit')
+      .reduce((sum, component) => sum + Number(component.value), 0);
+      
+    const totalDeductions = payrollComponents.value
+      .filter(c => c.type_component === 'debit')
+      .reduce((sum, component) => sum + Number(component.value), 0);
+    
+    const grossSalary = Number(currentEditItem.value.base_salary) + totalAllowances;
+    const netSalary = grossSalary - totalDeductions;
+    
+    let response;
+    
+    if (currentPayrollId.value) {
+      // If editing existing payroll draft, use update endpoint
+      response = await put(`/payroll_draft/update/${currentPayrollId.value}`, {
+        employee_id: currentEditItem.value.employee_id,
+        base_salary: currentEditItem.value.base_salary,
+        total_allowances: totalAllowances,
+        total_deductions: totalDeductions,
+        gross_salary: grossSalary,
+        net_salary: netSalary,
+        components: payrollComponents.value
+      });
+    } else {
+      // This is a new item being edited before saving
+      // Just update the local data
+      response = { success: true };
+    }
+    
+    if (response.success) {
+      // Update the payroll data in the UI
+      const updatedItem = {
+        ...currentEditItem.value,
+        total_allowances: totalAllowances,
+        total_deductions: totalDeductions,
+        gross_salary: grossSalary,
+        net_salary: netSalary
+      };
+      
+      payrollData.value[currentEditIndex.value] = updatedItem;
+      
+      showSuccessToast("Data gaji berhasil diperbarui");
+      closeEditModal();
+    } else {
+      showErrorToast(response.message || "Gagal memperbarui data gaji");
+    }
+  } catch (error) {
+    console.error("Error saving payroll changes:", error);
+    showErrorToast("Terjadi kesalahan saat menyimpan perubahan");
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 
 // Methods for saving payroll
@@ -558,6 +699,7 @@ const onSubmit = async () => {
     }
     
     const payrollDraftMonthId = monthData.id;
+    form.value.id = payrollDraftMonthId;
     
     // Step 2: Create payroll draft employees for each employee
     const promises = payrollData.value.map(item => {
