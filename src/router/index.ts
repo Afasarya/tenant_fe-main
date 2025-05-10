@@ -1166,6 +1166,45 @@ const routes: Array<RouteRecordRaw> = [
           ],
         },
       },
+      {
+        path: "payroll/list",
+        name: "PayrollList",
+        component: indexGeneratePayroll,
+        meta: {
+          title: "Daftar Payroll | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Daftar Payroll", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/edit/:id",
+        name: "EditPayroll",
+        component: GeneratePayrollForm,
+        meta: {
+          title: "Edit Payroll | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Edit Payroll", link: "" },
+          ],
+        },
+      },
+      {
+        path: "payroll/detail/:id",
+        name: "DetailPayroll",
+        component: () => import("@/pages/hcm/payroll/generate/detail.vue"),
+        meta: {
+          title: "Detail Payroll | Fico - Manna Jaya",
+          crumbs: [
+            { label: "HCM", link: "" },
+            { label: "Payroll", link: "" },
+            { label: "Detail Payroll", link: "" },
+          ],
+        },
+      },
     ],
   },
   {

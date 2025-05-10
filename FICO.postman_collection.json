@@ -5076,6 +5076,279 @@
 										}
 									},
 									"response": []
+								},
+								{
+									"name": "Setujui",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_tenant}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"payroll_status\" :\"pending\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/payroll_approval/update_status/01jtm8951v8tv9yd014g4qmx7e",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"payroll_approval",
+												"update_status",
+												"01jtm8951v8tv9yd014g4qmx7e"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Payroll Draft Employee Copy",
+							"item": [
+								{
+									"name": "List",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_tenant}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"payroll_draft_month_id\" : \"01jtjpq87v57qck7bj983y8wja\", //required\r\n    \"search\": \"\" // boleh kosong\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/payroll_draft/index",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"payroll_draft",
+												"index"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Show",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_tenant}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/payroll_draft/show/01jtjptqptdh1wr04y0b3svqpf",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"payroll_draft",
+												"show",
+												"01jtjptqptdh1wr04y0b3svqpf"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Insert",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_tenant}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"payroll_draft_month_id\" : \"01jtjpq87v57qck7bj983y8wja\",\n    \"employee_id\" : 10\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/payroll_draft/store",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"payroll_draft",
+												"store"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_tenant}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/payroll_draft/destroy/01jtjpxyy4ffgnj548fqdsq1kp",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"payroll_draft",
+												"destroy",
+												"01jtjpxyy4ffgnj548fqdsq1kp"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_tenant}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"employee_id\": 3,\n    \"payroll_draft_id\": \"01jtjpxrmer97fam19vk2gpc6c\",\n    \"amount\" : 1000000\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/payroll_draft/update/01jtjpxrmrf5seec4dj877rxer",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"payroll_draft",
+												"update",
+												"01jtjpxrmrf5seec4dj877rxer"
+											]
+										}
+									},
+									"response": []
 								}
 							]
 						},
@@ -6783,6 +7056,460 @@
 					"name": "Employee",
 					"item": [
 						{
+							"name": "Employee Reference",
+							"item": [
+								{
+									"name": "TER Statuses List",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_central}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/employee_reference/ter_statuses",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"employee_reference",
+												"ter_statuses"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Education List",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_central}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/employee_reference/education/",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"employee_reference",
+												"education",
+												""
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Religion List",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_central}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/employee_reference/religion/",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"employee_reference",
+												"religion",
+												""
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Blood Group List",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_central}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/employee_reference/blood_group",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"employee_reference",
+												"blood_group"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Country List",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_central}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n   \n    // \"search\":\"indo\"\n   \n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/employee_reference/country/",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"employee_reference",
+												"country",
+												""
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Province List",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_central}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n   \n    // \"search\":\"jawa\"\n   \n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/employee_reference/province?country_id=1&page=1",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"employee_reference",
+												"province"
+											],
+											"query": [
+												{
+													"key": "country_id",
+													"value": "1"
+												},
+												{
+													"key": "page",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "District List",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_central}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"provinces_id\": 1,\n    \"search\":\"bar\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/employee_reference/district?province_id=1&page=1",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"employee_reference",
+												"district"
+											],
+											"query": [
+												{
+													"key": "province_id",
+													"value": "1"
+												},
+												{
+													"key": "page",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Sub District List",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_central}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n//    \"per_page\" :\"20\"\n    // \"search\":\"jawa\"\n   \n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/employee_reference/sub_district?district_id=229",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"employee_reference",
+												"sub_district"
+											],
+											"query": [
+												{
+													"key": "district_id",
+													"value": "229"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Village List",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_central}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n//    \"per_page\" :\"20\"\n    // \"search\":\"jawa\"\n   \n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/employee_reference/village?sub_district_id=1",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"employee_reference",
+												"village"
+											],
+											"query": [
+												{
+													"key": "sub_district_id",
+													"value": "1"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
 							"name": "position",
 							"item": [
 								{
@@ -7915,13 +8642,19 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/employee/",
+											"raw": "{{host}}{{tenant}}/employee/?page=1",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"employee",
 												""
+											],
+											"query": [
+												{
+													"key": "page",
+													"value": "1"
+												}
 											]
 										}
 									},
@@ -7953,7 +8686,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"search\":\"ahmad\"\n}",
+											"raw": "{\n    \"search\":\"charles\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -8007,13 +8740,13 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/employee/12",
+											"raw": "{{host}}{{tenant}}/employee/3",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"employee",
-												"12"
+												"3"
 											]
 										}
 									},
@@ -8042,7 +8775,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    // LAMA\n    // \"name\"             : \"Ahmad Junaidi\",\n    // \"position_id\"      : 1,\n    // \"department_id\"    : 1,\n    // \"workinghour_id\"   : 1,\n    // \"work_location_id\" : 1,\n    // \"ter_statuses_id\"  : 1,\n    // \"salary\"           : 111111.00,\n    // \"hire_date\"        : \"2024-01-01\",\n    // \"status\"           : true\n\n    //BARU\n    \"email\"               : \"abc@b.com\",\n    \"position_id\"         : 1,                                            // REQUIRED     | reference table positions\n    \"department_id\"       : 1,                                            // REQUIRED     | reference table departments\n    \"workinghour_id\"      : 1,                                            // REQUIRED     | reference table working_hours\n    \"work_location_id\"    : 1,                                            // REQUIRED     | reference table work_locations\n    \"ter_statuses_id\"     : 1,                                            // REQUIRED     | reference table ter_statuses\n    \"education_id\"        : 4,                                            // not required | reference table education\n    \"religion_id\"         : 4,                                            // not required | reference table religions\n    \"blood_group_id\"      : 1,                                            // not required | reference table blood_groups\n    \"employee_number\"     : \"2009010200000001\",                           // not required | Nomor Induk Kepegawaian\n    \"identity_number\"     : \"3305160101900001\",                           // not required | Nomor Induk Kependudukan\n    \"name\"                : \"Ahmad Junaidi\",                              // REQUIRED     | Nama Lengkap Pegawai\n    \"gender\"              : \"male\",                                       // not required | value : male, female\n    \"marital_status\"      : \"Belum Kawin\",                                // not required | value : Belum Kawin, Kawin, Cerai Hidup, Cerai Mati\n    \"date_of_birth\"       : \"1990-01-01\",                                 // not required | value : date YYYY-MM-DD\n    \"place_of_birth\"      : \"Banyumas\",                                   // not required | Tempat Lahir\n    \"address\"             : \"Jl.Prof. Dr. HR. Bunyamin Purwokerto 53121\", // not required | Alamat lengkap\n    \"domicile\"            : \"Jl.Prof. Dr. HR. Bunyamin Purwokerto 53121\", // not required | Domisili\n    \"country_id\"          : 1,                                            // not required | reference table countrys\n    \"province_id\"         : 1,                                            // not required | reference table provinces\n    \"city_id\"             : 229,                                          // not required | reference table cities\n    \"sub_district_id\"     : 1,                                            // not required | reference table sub_districts\n    \"village_id\"          : 1,                                            // not required | reference table villages\n    \"status\"              : true,                                         // REQUIRED     | true false\n    \"certification\"       : \"-\",                                          // not required | sertifikasi\n    \"npwp\"                : \"136178233\",                                  // not required | No NPWP\n    \"phone_number\"        : \"085111222333\",                               // not required | Nomor Telepon\n    \"bpjs_pensiun\"        : \"12345\",                                      // not required | Nomor Bpjs\n    \"bpjs_kesehatan\"      : \"23456\",                                      // not required | Nomor Bpjs\n    \"bpjs_tk\"             : \"34567\",                                      // not required | Nomor Bpjs\n    \"bank\"                : \"BCA\",                                        // not required | Nama Bank\n    \"bank_branch\"         : \"Kalimantan\",                                 // not required | Nama Bank Cabang\n    \"bank_account_name\"   : \"Ahmad Junaidi\",                              // not required | Nama Pemilik Rekening\n    \"bank_account_number\" : \"098712365\",                                  // not required | No Rekeing\n    \"biological_mother\"   : \"Slamet\",                                     // not required | Nama Lengkap Ibu Kandung\n    \"salary\"              : 3000000,                                      // REQUIRED     | Gaji Pokok\n    \"salary_status\"       : \"All In\",                                     // not required | Status Gaji default All In\n    \"hire_date\"           : \"2024-01-01\",                                 // REQUIRED     | Mulai Kerja value : date YYYY-MM-DD\n    \"date_out\"            : \"\",                                            // not required | Akhir Kerja value : date YYYY-MM-DD\n    \"is_admin\"            : true,      \n    \"position_allowance\"  : 1000000,                                      // not required | Tunjangan Jabatan\n    \"work_location_allowance\" : 2000000                                   // not required | Tunjangan Lokasi\n}",
+											"raw": "{\n    // LAMA\n    // \"name\"             : \"Ahmad Junaidi\",\n    // \"position_id\"      : 1,\n    // \"department_id\"    : 1,\n    // \"workinghour_id\"   : 1,\n    // \"work_location_id\" : 1,\n    // \"ter_statuses_id\"  : 1,\n    // \"salary\"           : 111111.00,\n    // \"hire_date\"        : \"2024-01-01\",\n    // \"status\"           : true\n\n    //BARU\n    \"email\"               : \"abc@b.com\",\n    \"position_id\"         : 1,                                            // REQUIRED     | reference table positions\n    \"department_id\"       : 1,                                            // REQUIRED     | reference table departments\n    \"workinghour_id\"      : 1,                                            // REQUIRED     | reference table working_hours\n    \"work_location_id\"    : 1,                                            // REQUIRED     | reference table work_locations\n    \"ter_statuses_id\"     : 1,                                            // REQUIRED     | reference table ter_statuses\n    \"education_id\"        : 4,                                            // not required | reference table education\n    \"religion_id\"         : 4,                                            // not required | reference table religions\n    \"blood_group_id\"      : 1,                                            // not required | reference table blood_groups\n    \"employee_number\"     : \"2009010200000001\",                           // not required | Nomor Induk Kepegawaian\n    \"identity_number\"     : \"3305160101900001\",                           // not required | Nomor Induk Kependudukan\n    \"name\"                : \"Ahmad Junaidi\",                              // REQUIRED     | Nama Lengkap Pegawai\n    \"gender\"              : \"male\",                                       // not required | value : male, female\n    \"marital_status\"      : \"Belum Kawin\",                                // not required | value : Belum Kawin, Kawin, Cerai Hidup, Cerai Mati\n    \"date_of_birth\"       : \"1990-01-01\",                                 // not required | value : date YYYY-MM-DD\n    \"place_of_birth\"      : \"Banyumas\",                                   // not required | Tempat Lahir\n    \"address\"             : \"Jl.Prof. Dr. HR. Bunyamin Purwokerto 53121\", // not required | Alamat lengkap\n    \"domicile\"            : \"Jl.Prof. Dr. HR. Bunyamin Purwokerto 53121\", // not required | Domisili\n    \"country_id\"          : 1,                                            // not required | reference table countrys\n    \"province_id\"         : 1,                                            // not required | reference table provinces\n    \"city_id\"             : 229,                                          // not required | reference table cities\n    \"sub_district_id\"     : 1,                                            // not required | reference table sub_districts\n    \"village_id\"          : 1,                                            // not required | reference table villages\n    \"status\"              : true,                                         // REQUIRED     | true false\n    \"certification\"       : \"-\",                                          // not required | sertifikasi\n    \"npwp\"                : \"136178233\",                                  // not required | No NPWP\n    \"phone_number\"        : \"085111222333\",                               // not required | Nomor Telepon\n    \"bpjs_pensiun\"        : \"12345\",                                      // not required | Nomor Bpjs\n    \"bpjs_kesehatan\"      : \"23456\",                                      // not required | Nomor Bpjs\n    \"bpjs_tk\"             : \"34567\",                                      // not required | Nomor Bpjs\n    \"bank\"                : \"BCA\",                                        // not required | Nama Bank\n    \"bank_branch\"         : \"Kalimantan\",                                 // not required | Nama Bank Cabang\n    \"bank_account_name\"   : \"Ahmad Junaidi\",                              // not required | Nama Pemilik Rekening\n    \"bank_account_number\" : \"098712365\",                                  // not required | No Rekeing\n    \"biological_mother\"   : \"Slamet\",                                     // not required | Nama Lengkap Ibu Kandung\n    \"salary\"              : 3000000,                                      // REQUIRED     | Gaji Pokok\n    \"salary_status\"       : \"All In\",                                     // not required | Status Gaji default All In\n    \"hire_date\"           : \"2024-01-01\",                                 // REQUIRED     | Mulai Kerja value : date YYYY-MM-DD\n    \"date_out\"            : \"\",                                            // not required | Akhir Kerja value : date YYYY-MM-DD\n    \"is_admin\"            : true,      \n    \"position_allowance\"  : 1000000,                                      // not required | Tunjangan Jabatan\n    \"work_location_allowance\" : 2000000                                  // not required | Tunjangan Lokasi\n    \n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -8100,6 +8833,51 @@
 											"path": [
 												"employee",
 												"update",
+												"16"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Upload Foto Profil",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token_tenant}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "foto",
+													"type": "file",
+													"src": "/C:/Users/itwij/OneDrive/Pictures/pxfuel (1).jpg"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{host}}{{tenant}}/employee/upload_foto/16",
+											"host": [
+												"{{host}}{{tenant}}"
+											],
+											"path": [
+												"employee",
+												"upload_foto",
 												"16"
 											]
 										}
@@ -9331,7 +10109,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"payroll_component_template_id\" : \"01js10fd568wm5kmxez4wsgm5x\", \n    \"payroll_draft_year\" : 2025,\n    \"payroll_draft_month\" : \"02\",\n    \"description\" : \"Gaji HO Bulan Februari\"\n}",
+											"raw": "{\n    \"payroll_component_template_id\" : \"01js10fd568wm5kmxez4wsgm5x\", \n    \"start_date\" : \"2025-01-01\",\n    \"finish_date\" : \"2025-01-31\",\n    \"description\" : \"Gaji HO Bulan Februari 2025\",\n    \"employee_list\":[\n        {\n            \"employee_id\":1,\n            \"absent\": 3\n        },\n        {\n            \"employee_id\":2,\n            \"absent\": 1\n        }\n    ]\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -9374,7 +10152,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"payroll_draft_year\" : 2024,\n    \"payroll_draft_month\" : \"01\",\n    \"description\" : \"Gaji HO Bulan Januari\"\n}",
+											"raw": "{\n    \"start_date\" : \"2025-01-01\",\n    \"finish_date\" : \"2025-01-31\",\n    \"description\" : \"Gaji HO Bulan Februari 2025 A\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -9382,14 +10160,14 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/payroll_draft_month/update/01jtjpq87v57qck7bj983y8wja",
+											"raw": "{{host}}{{tenant}}/payroll_draft_month/update/01jtxwf5dgw3y86jma0rvaex93",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"payroll_draft_month",
 												"update",
-												"01jtjpq87v57qck7bj983y8wja"
+												"01jtxwf5dgw3y86jma0rvaex93"
 											]
 										}
 									},
@@ -9470,14 +10248,14 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/payroll_draft_month/delete/1",
+											"raw": "{{host}}{{tenant}}/payroll_draft_month/delete/01jtxwhpmycm1qjpb4pxtj5d5y",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"payroll_draft_month",
 												"delete",
-												"1"
+												"01jtxwhpmycm1qjpb4pxtj5d5y"
 											]
 										}
 									},
@@ -9576,49 +10354,6 @@
 												"payroll_draft",
 												"show",
 												"01jtjptqptdh1wr04y0b3svqpf"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Insert",
-									"request": {
-										"auth": {
-											"type": "bearer",
-											"bearer": [
-												{
-													"key": "token",
-													"value": "{{token_tenant}}",
-													"type": "string"
-												}
-											]
-										},
-										"method": "POST",
-										"header": [
-											{
-												"key": "Accept",
-												"value": "application/json",
-												"type": "text"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"payroll_draft_month_id\" : \"01jtjpq87v57qck7bj983y8wja\",\n    \"employee_id\" : 10\n}",
-											"options": {
-												"raw": {
-													"language": "json"
-												}
-											}
-										},
-										"url": {
-											"raw": "{{host}}{{tenant}}/payroll_draft/store",
-											"host": [
-												"{{host}}{{tenant}}"
-											],
-											"path": [
-												"payroll_draft",
-												"store"
 											]
 										}
 									},
@@ -9746,7 +10481,7 @@
 												],
 												"body": {
 													"mode": "raw",
-													"raw": "{\n    \"module\":\"payroll_final_months\",\n    \"transaction_id\":\"01jtm8951v8tv9yd014g4qmx7e\"\n}",
+													"raw": "{\n    \"module\":\"payroll_final_months\",\n    \"transaction_id\":\"01jtst36shcr3ebcnnrn5qnqmy\"\n}",
 													"options": {
 														"raw": {
 															"language": "json"
@@ -9761,6 +10496,94 @@
 													"path": [
 														"approvalTransaction",
 														"list"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "approve Approval",
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{token_tenant}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json",
+														"type": "text"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{host}}{{tenant}}/approvalTransaction/approve/53",
+													"host": [
+														"{{host}}{{tenant}}"
+													],
+													"path": [
+														"approvalTransaction",
+														"approve",
+														"53"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "cancel Approval",
+											"request": {
+												"auth": {
+													"type": "bearer",
+													"bearer": [
+														{
+															"key": "token",
+															"value": "{{token_tenant}}",
+															"type": "string"
+														}
+													]
+												},
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json",
+														"type": "text"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{host}}{{tenant}}/approvalTransaction/cancel/9",
+													"host": [
+														"{{host}}{{tenant}}"
+													],
+													"path": [
+														"approvalTransaction",
+														"cancel",
+														"9"
 													]
 												}
 											},
@@ -9794,7 +10617,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"search\":\"A\"\r\n}",
+											"raw": "{\r\n    // \"search\":\"A\"\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -9848,14 +10671,14 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/payroll_approval/show/01jtm8951v8tv9yd014g4qmx7e",
+											"raw": "{{host}}{{tenant}}/payroll_approval/show/01jtst36shcr3ebcnnrn5qnqmy",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"payroll_approval",
 												"show",
-												"01jtm8951v8tv9yd014g4qmx7e"
+												"01jtst36shcr3ebcnnrn5qnqmy"
 											]
 										}
 									},
@@ -9895,14 +10718,14 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/payroll_approval/employee/01jtm8951v8tv9yd014g4qmx7e",
+											"raw": "{{host}}{{tenant}}/payroll_approval/employee/01jtxws6e7t07tyj7030bghy7k",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"payroll_approval",
 												"employee",
-												"01jtm8951v8tv9yd014g4qmx7e"
+												"01jtxws6e7t07tyj7030bghy7k"
 											]
 										}
 									},
@@ -9956,51 +10779,7 @@
 									"response": []
 								},
 								{
-									"name": "Setujui",
-									"request": {
-										"auth": {
-											"type": "bearer",
-											"bearer": [
-												{
-													"key": "token",
-													"value": "{{token_tenant}}",
-													"type": "string"
-												}
-											]
-										},
-										"method": "PUT",
-										"header": [
-											{
-												"key": "Accept",
-												"value": "application/json",
-												"type": "text"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"payroll_status\" :\"pending\"\n}",
-											"options": {
-												"raw": {
-													"language": "json"
-												}
-											}
-										},
-										"url": {
-											"raw": "{{host}}{{tenant}}/payroll_approval/update_status/01jtm8951v8tv9yd014g4qmx7e",
-											"host": [
-												"{{host}}{{tenant}}"
-											],
-											"path": [
-												"payroll_approval",
-												"update_status",
-												"01jtm8951v8tv9yd014g4qmx7e"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Cancel",
+									"name": "Kembalikan ke draft",
 									"request": {
 										"auth": {
 											"type": "bearer",
@@ -10030,14 +10809,14 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/payroll_approval/cancel/01jtm8951v8tv9yd014g4qmx7e",
+											"raw": "{{host}}{{tenant}}/payroll_approval/cancel/01jtsstxkz3ydkgq74607pc6nn",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"payroll_approval",
 												"cancel",
-												"01jtm8951v8tv9yd014g4qmx7e"
+												"01jtsstxkz3ydkgq74607pc6nn"
 											]
 										}
 									},
