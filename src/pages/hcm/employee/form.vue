@@ -23,22 +23,22 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label">Nama Pegawai*</label>
-              <input type="text" class="form-control" v-model="forms.name" :disabled="isView">
+              <input type="text" class="form-control" v-model="forms.name" :disabled="isView" :readonly="isView">
               <div v-if="formSubmitted && !forms.name" class="text-danger">Nama pegawai harus diisi</div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Email</label>
-              <input type="email" class="form-control" v-model="forms.email" :disabled="isView">
+              <input type="email" class="form-control" v-model="forms.email" :disabled="isView" :readonly="isView">
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label">Nomor Pegawai</label>
-              <input type="text" class="form-control" v-model="forms.employee_number" :disabled="isView">
+              <input type="text" class="form-control" v-model="forms.employee_number" :disabled="isView" :readonly="isView">
             </div>
             <div class="col-md-6">
               <label class="form-label">NIK</label>
-              <input type="text" class="form-control" v-model="forms.identity_number" :disabled="isView">
+              <input type="text" class="form-control" v-model="forms.identity_number" :disabled="isView" :readonly="isView">
             </div>
           </div>
           <div class="row mb-3">
@@ -349,10 +349,14 @@
         <!-- Form Actions -->
         <div v-if="!isView" class="d-flex justify-content-end mt-3">
           <button type="button" class="btn btn-secondary me-2" @click="goBack">Batal</button>
-          <button type="submit" class="btn btn-primary" :disabled="loading">Simpan</button>
+          <button type="submit" class="btn btn-primary" :disabled="loading">
+            <span v-if="loading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            {{ isEdit ? 'Perbarui' : 'Simpan' }}
+          </button>
         </div>
         <div v-else class="d-flex justify-content-end mt-3">
-          <button type="button" class="btn btn-secondary" @click="goBack">Kembali</button>
+          <button type="button" class="btn btn-secondary me-2" @click="goBack">Kembali</button>
+          <button type="button" class="btn btn-primary" @click="goToEdit" v-if="canEdit">Edit</button>
         </div>
       </form>
     </div>
@@ -372,12 +376,24 @@ const route = useRoute();
 const router = useRouter();
 const { get, post, put } = useAxios();
 
-// State
-const employeeId = computed(() => route.params.id as string);
+// Fix employee ID extraction from route params
+const employeeId = computed(() => {
+  if (!route.params.id) return '';
+  
+  // Ensure we're getting a clean ID value
+  const id = String(route.params.id).trim();
+  console.log('Employee ID from route:', id);
+  return id;
+});
+
+// Improved mode management
 const isEdit = computed(() => route.name === 'EditPegawai');
 const isView = computed(() => route.name === 'DetailPegawai');
+const canEdit = computed(() => isView.value && employeeId.value); // Can edit only if in view mode and has ID
 const activeTab = ref('basic');
 const loading = ref(false);
+const submitting = ref(false);
+const fetchError = ref('');
 const fileToUpload = ref<File | null>(null);
 const profilePhotoUrl = ref<string | null>(null);
 
@@ -411,22 +427,40 @@ const filteredCities = computed(() => Array.isArray(cities.value) ? cities.value
 const filteredSubDistricts = computed(() => Array.isArray(subDistricts.value) ? subDistricts.value.filter(item => item && item.id != null) : []);
 const filteredVillages = computed(() => Array.isArray(villages.value) ? villages.value.filter(item => item && item.id != null) : []);
 
-// Fetch employee detail
+// Improved fetch employee detail function with better error handling
 const fetchDetail = async () => {
-  if (!employeeId.value) return;
+  if (!employeeId.value) {
+    console.error('No employee ID provided');
+    return false;
+  }
   
   try {
     loading.value = true;
-    const { data, success, message } = await get(`/employee/show/${employeeId.value}`);
+    fetchError.value = '';
+    
+    // Add cache-busting parameter to prevent caching issues
+    const url = `/employee/${employeeId.value}?_=${Date.now()}`;
+    console.log('API URL being called:', url);
+    
+    const response = await get(url);
+    console.log('API Response:', response);
+    
+    const { data, success, message } = response;
     
     if (success && data) {
+      console.log('Employee data received:', data);
+      
+      // Reset form before populating
+      resetForm();
+      
       // Map API response to form fields
-      (Object.keys(forms.value) as Array<keyof typeof forms.value>).forEach((key) => {
-        if (key in data) {
-          // Handle dates
+      Object.keys(forms.value).forEach((key) => {
+        if (data && key in data && data[key] !== null && data[key] !== undefined) {
           if (key === 'date_of_birth' || key === 'hire_date' || key === 'date_out') {
-            const raw = data[key] as string | null;
-            (forms.value as any)[key] = raw ? dayjs(raw).format('YYYY-MM-DD') : '';
+            const dateValue = data[key];
+            if (dateValue) {
+              (forms.value as any)[key] = dayjs(dateValue).format('YYYY-MM-DD');
+            }
           } else {
             (forms.value as any)[key] = data[key];
           }
@@ -434,29 +468,61 @@ const fetchDetail = async () => {
       });
       
       // Handle boolean values
-      forms.value.status = !!data.status;
-      forms.value.is_admin = !!data.is_admin;
+      forms.value.status = data.status === 1 || data.status === true;
+      forms.value.is_admin = data.is_admin === 1 || data.is_admin === true;
       
-      // If employee has a profile photo
       if (data.photo_url) {
         profilePhotoUrl.value = data.photo_url;
       }
       
-      // Fetch dependent dropdowns based on selected values
-      if (data.country_id) onCountryChange();
-      if (data.province_id) onProvinceChange();
-      if (data.city_id) onCityChange();
+      // Load dependent data based on selected values
+      await Promise.all([
+        forms.value.country_id ? onCountryChange() : Promise.resolve(),
+        forms.value.province_id ? onProvinceChange() : Promise.resolve(),
+        forms.value.city_id ? onCityChange() : Promise.resolve(),
+        forms.value.sub_district_id ? onSubDistrictChange() : Promise.resolve()
+      ]);
+      
+      return true;
     } else {
-      showErrorToast(message || 'Gagal mengambil data pegawai');
-      goBack();
+      fetchError.value = message || 'Gagal mengambil data pegawai';
+      showErrorToast(fetchError.value);
+      return false;
     }
   } catch (error) {
     console.error('Error fetching employee details:', error);
-    showErrorToast('Terjadi kesalahan saat mengambil data pegawai');
-    goBack();
+    fetchError.value = 'Terjadi kesalahan saat mengambil data pegawai';
+    showErrorToast(fetchError.value);
+    return false;
   } finally {
     loading.value = false;
   }
+};
+
+// Reset form to initial values
+const resetForm = () => {
+  Object.keys(forms.value).forEach(key => {
+    // Reset each property based on its type
+    const typedKey = key as keyof typeof forms.value;
+    if (typeof forms.value[typedKey] === 'number') {
+      (forms.value as any)[typedKey] = 0;
+    } else if (typeof forms.value[typedKey] === 'boolean') {
+      (forms.value as any)[typedKey] = typedKey === 'status' ? true : false;
+    } else {
+      (forms.value as any)[typedKey] = '';
+    }
+  });
+  
+  // Set default values
+  (forms.value as any).gender = "male";
+  (forms.value as any).marital_status = "Belum Kawin";
+  (forms.value as any).salary_status = "All In";
+  (forms.value as any).hire_date = dayjs(new Date()).format("YYYY-MM-DD");
+  (forms.value as any).status = true;
+  
+  // Reset file upload
+  fileToUpload.value = null;
+  profilePhotoUrl.value = null;
 };
 
 // Fetch reference data functions
@@ -468,7 +534,7 @@ const fetchPositions = async () => {
     }
   } catch (error) {
     console.error('Error fetching positions:', error);
-    positions.value = []; // Ensure it's an empty array on error
+    positions.value = [];
   }
 };
 
@@ -480,7 +546,7 @@ const fetchDepartments = async () => {
     }
   } catch (error) {
     console.error('Error fetching departments:', error);
-    departments.value = []; // Ensure it's an empty array on error
+    departments.value = [];
   }
 };
 
@@ -631,6 +697,9 @@ const fetchCountries = async () => {
 const onCountryChange = async () => {
   if (!forms.value.country_id) {
     provinces.value = [];
+    cities.value = [];
+    subDistricts.value = [];
+    villages.value = [];
     return;
   }
   
@@ -638,18 +707,23 @@ const onCountryChange = async () => {
     const { data, success } = await get('/province/search', {
       params: { country_id: forms.value.country_id }
     });
-    if (success && data) {
+    
+    if (success && Array.isArray(data)) {
       provinces.value = data.filter((item: any) => item && item.id != null) || [];
+    } else {
+      provinces.value = [];
     }
   } catch (error) {
     console.error('Error fetching provinces:', error);
-    provinces.value = []; // Ensure it's an empty array on error
+    provinces.value = [];
   }
 };
 
 const onProvinceChange = async () => {
   if (!forms.value.province_id) {
     cities.value = [];
+    subDistricts.value = [];
+    villages.value = [];
     return;
   }
   
@@ -657,19 +731,22 @@ const onProvinceChange = async () => {
     const { data, success } = await get('/city/search', {
       params: { provinces_id: forms.value.province_id }
     });
-    if (success && data) {
-    cities.value = data.filter((item: any) => item && item.id != null) || [];
-  
+    
+    if (success && Array.isArray(data)) {
+      cities.value = data.filter((item: any) => item && item.id != null) || [];
+    } else {
+      cities.value = [];
     }
   } catch (error) {
     console.error('Error fetching cities:', error);
-    cities.value = []; // Ensure it's an empty array on error
+    cities.value = [];
   }
 };
 
 const onCityChange = async () => {
   if (!forms.value.city_id) {
     subDistricts.value = [];
+    villages.value = [];
     return;
   }
   
@@ -677,12 +754,15 @@ const onCityChange = async () => {
     const { data, success } = await get('/subDistrict/search', {
       params: { cities_id: forms.value.city_id }
     });
-    if (success && data) {
-      subDistricts.value = data.filter(item => item && item.id != null) || [];
+    
+    if (success && Array.isArray(data)) {
+      subDistricts.value = data.filter((item: any) => item && item.id != null) || [];
+    } else {
+      subDistricts.value = [];
     }
   } catch (error) {
     console.error('Error fetching sub-districts:', error);
-    subDistricts.value = []; // Ensure it's an empty array on error
+    subDistricts.value = [];
   }
 };
 
@@ -701,7 +781,7 @@ const onSubDistrictChange = async () => {
     });
     
     if (response1?.success && response1?.data && Array.isArray(response1.data) && response1.data.length > 0) {
-      villages.value = response1.data.filter(item => item && item.id != null);
+      villages.value = response1.data.filter((item: { id: number | null; name?: string }) => item && item.id != null);
       console.log('Villages fetched from /village/search:', villages.value);
       return;
     }
@@ -715,7 +795,7 @@ const onSubDistrictChange = async () => {
     if (response2?.success && response2?.data) {
       // Handle different response formats
       if (Array.isArray(response2.data)) {
-        villages.value = response2.data.filter(item => item && item.id != null);
+        villages.value = response2.data.filter((item: { id: number | null; name?: string }) => item && item.id != null);
       } else if (response2.data && typeof response2.data === 'object' && response2.data.data) {
         villages.value = Array.isArray(response2.data.data) ? 
           response2.data.data.filter(item => item && item.id != null) : [];
@@ -748,8 +828,9 @@ const handleFileChange = (event: Event) => {
   }
 };
 
+// Improved file upload function
 const uploadProfilePhoto = async (id: string) => {
-  if (!fileToUpload.value) return;
+  if (!fileToUpload.value) return true;
   
   try {
     const formData = new FormData();
@@ -763,14 +844,18 @@ const uploadProfilePhoto = async (id: string) => {
     
     if (!success) {
       showErrorToast(message || 'Gagal mengunggah foto profil');
+      return false;
     }
+    
+    return true;
   } catch (error) {
     console.error('Error uploading profile photo:', error);
     showErrorToast('Terjadi kesalahan saat mengunggah foto profil');
+    return false;
   }
 };
 
-// Form submission
+// Improved form submission with correct endpoint
 const handleSubmit = async () => {
   formSubmitted.value = true;
   
@@ -780,48 +865,119 @@ const handleSubmit = async () => {
   }
   
   try {
-    loading.value = true;
+    submitting.value = true;
     
-    // Prepare payload converting booleans to numbers
+    // Prepare payload with proper data type conversion
     const payload = {
       ...forms.value,
+      // Ensure numeric fields are sent as numbers
+      position_id: forms.value.position_id ? Number(forms.value.position_id) : null,
+      department_id: forms.value.department_id ? Number(forms.value.department_id) : null,
+      workinghour_id: forms.value.workinghour_id ? Number(forms.value.workinghour_id) : null,
+      work_location_id: forms.value.work_location_id ? Number(forms.value.work_location_id) : null,
+      ter_statuses_id: forms.value.ter_statuses_id ? Number(forms.value.ter_statuses_id) : null,
+      education_id: forms.value.education_id ? Number(forms.value.education_id) : null,
+      religion_id: forms.value.religion_id ? Number(forms.value.religion_id) : null,
+      blood_group_id: forms.value.blood_group_id ? Number(forms.value.blood_group_id) : null,
+      country_id: forms.value.country_id ? Number(forms.value.country_id) : null,
+      province_id: forms.value.province_id ? Number(forms.value.province_id) : null,
+      city_id: forms.value.city_id ? Number(forms.value.city_id) : null,
+      sub_district_id: forms.value.sub_district_id ? Number(forms.value.sub_district_id) : null,
+      village_id: forms.value.village_id ? Number(forms.value.village_id) : null,
+      salary: Number(forms.value.salary || 0),
+      position_allowance: Number(forms.value.position_allowance || 0),
+      work_location_allowance: Number(forms.value.work_location_allowance || 0),
       status: forms.value.status ? 1 : 0,
       is_admin: forms.value.is_admin ? 1 : 0
     };
     
+    console.log(`${isEdit.value ? 'Updating' : 'Creating'} employee with payload:`, payload);
+    
     let response;
-    if (isEdit.value) {
+    
+    if (isEdit.value && employeeId.value) {
+      // Using the correct employee update endpoint
+      console.log(`Sending PUT request to /employee/update/${employeeId.value}`);
       response = await put(`/employee/update/${employeeId.value}`, payload);
     } else {
+      console.log('Sending POST request to /employee/create');
       response = await post('/employee/create', payload);
     }
     
+    console.log('API Response:', response);
     const { success, message, data } = response;
     
     if (success) {
+      // Handle file upload if needed
+      if (fileToUpload.value) {
+        const idForUpload = isEdit.value ? employeeId.value : data?.id;
+        if (idForUpload) {
+          await uploadProfilePhoto(idForUpload);
+        }
+      }
+      
       showSuccessToast(`Data pegawai berhasil ${isEdit.value ? 'diperbarui' : 'ditambahkan'}`);
-      router.push({ name: 'DaftarPegawai' });
+      goBack();
     } else {
       showErrorToast(message || `Gagal ${isEdit.value ? 'memperbarui' : 'menambahkan'} data pegawai`);
     }
   } catch (error) {
-    console.error('Error submitting employee data:', error);
+    console.error(`Error ${isEdit.value ? 'updating' : 'creating'} employee:`, error);
     showErrorToast(`Terjadi kesalahan saat ${isEdit.value ? 'memperbarui' : 'menambahkan'} data pegawai`);
   } finally {
-    loading.value = false;
+    submitting.value = false;
   }
 };
 
+// Navigation
 const goBack = () => {
-  router.push({ name: 'Pegawai' });
+  router.push({ name: 'DaftarPegawai' });
 };
 
-// Fetch all reference data on mount
+// Added function to navigate from view to edit mode
+const goToEdit = () => {
+  if (employeeId.value) {
+    router.push({ name: 'EditPegawai', params: { id: employeeId.value } });
+  }
+};
+
+// Improved edit navigation in index.vue
+const onEdit = (id: string | number) => {
+  if (!id) {
+    showErrorToast('ID karyawan tidak valid');
+    return;
+  }
+  
+  const cleanId = String(id).trim();
+  console.log('Navigating to edit employee with ID:', cleanId);
+  
+  // Use push with object format for more reliable navigation
+  router.push({
+    path: `/hcm/edit_pegawai/${cleanId}`
+  });
+};
+
+// Enhanced watch functionality to reload data when route changes
+watch(
+  () => route.params.id,
+  async (newId, oldId) => {
+    console.log(`Route param changed from ${oldId} to ${newId}`);
+    
+    if (newId && (isEdit.value || isView.value)) {
+      console.log('Fetching employee data due to route change');
+      await fetchDetail();
+    } else if (!isEdit.value && !isView.value) {
+      resetForm();
+    }
+  },
+  { immediate: true }
+);
+
+// Initialize the form with reference data and employee data if in edit/view mode
 onMounted(async () => {
   loading.value = true;
   
   try {
-    // Fetch all reference data concurrently
     await Promise.all([
       fetchPositions(),
       fetchDepartments(),
@@ -834,13 +990,17 @@ onMounted(async () => {
       fetchCountries()
     ]);
     
-    // If in edit or view mode, fetch employee details after reference data
-    if (isEdit.value || isView.value) {
-      await fetchDetail();
+    if ((isEdit.value || isView.value) && employeeId.value) {
+      console.log('Component mounted, fetching employee data');
+      const success = await fetchDetail();
+      if (!success) {
+        setTimeout(() => goBack(), 1000);
+      }
     }
   } catch (error) {
     console.error('Error initializing form:', error);
     showErrorToast('Terjadi kesalahan saat memuat data');
+    setTimeout(() => goBack(), 1500);
   } finally {
     loading.value = false;
   }

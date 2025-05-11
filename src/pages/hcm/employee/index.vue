@@ -55,11 +55,37 @@ const onSearch = (query: string) => {
 const onAdd = () => {
   router.push({ name: "BuatPegawai" });
 };
+// Improved edit function with better error handling
 const onEdit = (id: string | number) => {
-  router.push(`/hcm/edit_pegawai/${id}`);
+  if (!id) {
+    showErrorToast('ID karyawan tidak valid');
+    return;
+  }
+  
+  const cleanId = String(id).trim();
+  console.log('Navigating to edit employee with ID:', cleanId);
+  
+  // Use router.push with object syntax for more reliable navigation
+  router.push({
+    name: "EditPegawai",
+    params: { id: cleanId }
+  });
 };
+// Improved view function with better error handling
 const onView = (id: string | number) => {
-  router.push(`/hcm/detail_pegawai/${id}`);
+  console.log('Viewing employee with ID:', id, 'Type:', typeof id);
+  
+  if (!id) {
+    showErrorToast('ID karyawan tidak valid');
+    return;
+  }
+  
+  // Force clean string conversion
+  const cleanId = String(id).trim();
+  console.log('Clean ID for routing:', cleanId);
+  
+  // Navigate using route path instead of name for more reliability
+  router.push(`/hcm/detail_pegawai/${cleanId}`);
 };
 const onDelete = async (id: string | number) => {
   return await remove(`/employee/delete/${id}`);
@@ -108,13 +134,19 @@ const fetchEmployeeList = async () => {
   }
 };
 
-// Function to get single employee detail
+// Improved fetch employee detail function
 const fetchEmployeeDetail = async (id: string | number) => {
   try {
     loading.value = true;
-    const { data, success, message } = await get(`/employee/${id}`);
+    console.log(`Fetching employee details for ID: ${id}`);
     
-    if (success) {
+    // Use the correct API endpoint
+    const response = await get(`/employee/${id}`);
+    console.log('API Response:', response);
+    
+    const { data, success, message } = response;
+    
+    if (success && data) {
       return data;
     } else {
       showErrorToast(message || "Gagal mengambil detail pegawai");
