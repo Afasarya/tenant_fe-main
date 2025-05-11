@@ -7,6 +7,86 @@
       </div>
     </div>
     <div v-else>
+      <!-- Profile Header Section -->
+      <div class="profile-header mb-4">
+        <div class="row g-4 align-items-center">
+          <div class="col-md-3 text-center">
+            <div class="profile-photo-container">
+              <img 
+                :src="profilePhotoUrl || '/assets/default-avatar.png'" 
+                alt="Profile Photo" 
+                class="profile-photo"
+                @error="handleImageError"
+              >
+              <div v-if="!isView" class="profile-photo-overlay">
+                <label for="profile-photo-input" class="btn btn-sm btn-light upload-btn">
+                  <i class="fa fa-camera"></i> Ubah Foto
+                </label>
+                <input 
+                  id="profile-photo-input"
+                  type="file" 
+                  class="d-none" 
+                  @change="handleFileChange" 
+                  accept="image/*" 
+                >
+              </div>
+            </div>
+          </div>
+          <div class="col-md-9">
+            <div class="profile-info">
+              <div class="input-group mb-3">
+                <span class="input-group-text bg-light">Nama</span>
+                <input 
+                  type="text" 
+                  class="form-control form-control-lg" 
+                  v-model="forms.name" 
+                  :disabled="isView"
+                  placeholder="Nama Pegawai" 
+                >
+              </div>
+              
+              <div class="row g-2">
+                <div class="col">
+                  <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fa fa-briefcase"></i></span>
+                    <select class="form-select" v-model.number="forms.position_id" :disabled="isView">
+                      <option value="">Pilih Jabatan</option>
+                      <option v-for="position in filteredPositions" :key="position.id" :value="position.id">
+                        {{ position.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fa fa-building"></i></span>
+                    <select class="form-select" v-model.number="forms.department_id" :disabled="isView">
+                      <option value="">Pilih Departemen</option>
+                      <option v-for="dept in filteredDepartments" :key="dept.id" :value="dept.id">
+                        {{ dept.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="profile-badges mt-3">
+                <span class="badge rounded-pill bg-primary me-2">
+                  <i class="fa fa-envelope me-1"></i> {{ forms.email || 'Email tidak tersedia' }}
+                </span>
+                <span class="badge rounded-pill bg-secondary me-2">
+                  <i class="fa fa-phone me-1"></i> {{ forms.phone_number || 'No. Telepon tidak tersedia' }}
+                </span>
+                <span class="badge rounded-pill" :class="forms.status ? 'bg-success' : 'bg-danger'">
+                  <i class="fa" :class="forms.status ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                  {{ forms.status ? 'Aktif' : 'Tidak Aktif' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Tabs -->
       <ul class="nav nav-tabs mb-3">
         <li v-for="tab in activeTabOptions" :key="tab.id" class="nav-item">
@@ -349,8 +429,8 @@
         <!-- Form Actions -->
         <div v-if="!isView" class="d-flex justify-content-end mt-3">
           <button type="button" class="btn btn-secondary me-2" @click="goBack">Batal</button>
-          <button type="submit" class="btn btn-primary" :disabled="loading">
-            <span v-if="loading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          <button type="submit" class="btn btn-primary" :disabled="submitting">
+            <span v-if="submitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             {{ isEdit ? 'Perbarui' : 'Simpan' }}
           </button>
         </div>
@@ -390,6 +470,12 @@ const fetchError = ref('');
 const fileToUpload = ref<File | null>(null);
 const profilePhotoUrl = ref<string | null>(null);
 
+// Image error handler function
+const handleImageError = (event: Event) => {
+  const target = event.target as HTMLImageElement;
+  target.src = '/assets/default-avatar.png';
+};
+
 // Reference data
 const positions = ref<any[]>([]);
 const departments = ref<any[]>([]);
@@ -405,7 +491,6 @@ const cities = ref<any[]>([]);
 const subDistricts = ref<any[]>([]);
 const villages = ref<any[]>([]);
 
-// Filtered reference data with array type checking
 const filteredPositions = computed(() => Array.isArray(positions.value) ? positions.value.filter(item => item && item.id != null) : []);
 const filteredDepartments = computed(() => Array.isArray(departments.value) ? departments.value.filter(item => item && item.id != null) : []);
 const filteredWorkingHours = computed(() => Array.isArray(workingHours.value) ? workingHours.value.filter(item => item && item.id != null) : []);
@@ -420,13 +505,11 @@ const filteredCities = computed(() => Array.isArray(cities.value) ? cities.value
 const filteredSubDistricts = computed(() => Array.isArray(subDistricts.value) ? subDistricts.value.filter(item => item && item.id != null) : []);
 const filteredVillages = computed(() => Array.isArray(villages.value) ? villages.value.filter(item => item && item.id != null) : []);
 
-// Fixed fetchDetail function with proper email field handling
 const fetchDetail = async () => {
   loading.value = true;
   try {
     console.log('Fetching employee with ID:', id.value);
     
-    // Fetch data from API with cache busting timestamp
     const timestamp = Date.now();
     const response = await get(`/employee/${id.value}?_t=${timestamp}`);
     
@@ -890,8 +973,7 @@ const uploadProfilePhoto = async (id: string | number) => {
     const response = await post(`/employee/upload_foto/${id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        // Don't set Content-Type header explicitly - Axios will set it with proper boundary
-        // when using FormData
+
       }
     });
     
@@ -1064,5 +1146,76 @@ onMounted(async () => {
 }
 .nav-link {
   cursor: pointer;
+}
+
+/* New profile styling */
+.profile-header {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.profile-photo-container {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 5px solid white;
+}
+
+.profile-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-photo-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-photo-container:hover .profile-photo-overlay {
+  opacity: 1;
+}
+
+.upload-btn {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 30px;
+  padding: 5px 15px;
+  font-size: 0.8rem;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.profile-info {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.profile-badges .badge {
+  font-weight: normal;
+  font-size: 0.85rem;
+  padding: 7px 12px;
 }
 </style>
