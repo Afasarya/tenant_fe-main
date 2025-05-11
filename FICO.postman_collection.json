@@ -8740,13 +8740,13 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/employee/3",
+											"raw": "{{host}}{{tenant}}/employee/2",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"employee",
-												"3"
+												"2"
 											]
 										}
 									},
@@ -10073,14 +10073,14 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/payroll_draft_month/show/01jtjpq87v57qck7bj983y8wja",
+											"raw": "{{host}}{{tenant}}/payroll_draft_month/show/01jtxwz8971fz6yfnabvej5hyx",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"payroll_draft_month",
 												"show",
-												"01jtjpq87v57qck7bj983y8wja"
+												"01jtxwz8971fz6yfnabvej5hyx"
 											]
 										}
 									},
@@ -10292,7 +10292,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\r\n    \"payroll_draft_month_id\" : \"01jtjpq87v57qck7bj983y8wja\", //required\r\n    \"search\": \"\" // boleh kosong\r\n}",
+											"raw": "{\r\n    \"payroll_draft_month_id\" : \"01jtxwz8971fz6yfnabvej5hyx\", //required\r\n    \"search\": \"\" // boleh kosong\r\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -10346,14 +10346,14 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/payroll_draft/show/01jtjptqptdh1wr04y0b3svqpf",
+											"raw": "{{host}}{{tenant}}/payroll_draft/show/01jtxwz8akxgfqx2ff9w62n4e0",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"payroll_draft",
 												"show",
-												"01jtjptqptdh1wr04y0b3svqpf"
+												"01jtxwz8akxgfqx2ff9w62n4e0"
 											]
 										}
 									},
@@ -10671,14 +10671,14 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/payroll_approval/show/01jtst36shcr3ebcnnrn5qnqmy",
+											"raw": "{{host}}{{tenant}}/payroll_approval/show/01jtxws6e7t07tyj7030bghy7k",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"payroll_approval",
 												"show",
-												"01jtst36shcr3ebcnnrn5qnqmy"
+												"01jtxws6e7t07tyj7030bghy7k"
 											]
 										}
 									},
@@ -10765,14 +10765,14 @@
 											}
 										},
 										"url": {
-											"raw": "{{host}}{{tenant}}/payroll_approval/employee_detail/01jtm89525e0zv0d9a5nprzkeb",
+											"raw": "{{host}}{{tenant}}/payroll_approval/employee_detail/01jtxws6ejj0tj89ne887pjgj0",
 											"host": [
 												"{{host}}{{tenant}}"
 											],
 											"path": [
 												"payroll_approval",
 												"employee_detail",
-												"01jtm89525e0zv0d9a5nprzkeb"
+												"01jtxws6ejj0tj89ne887pjgj0"
 											]
 										}
 									},

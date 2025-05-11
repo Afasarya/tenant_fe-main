@@ -55,37 +55,41 @@ const onSearch = (query: string) => {
 const onAdd = () => {
   router.push({ name: "BuatPegawai" });
 };
-// Improved edit function with better error handling
+// Use a direct URL approach with URL parameters to ensure a clean state
 const onEdit = (id: string | number) => {
   if (!id) {
     showErrorToast('ID karyawan tidak valid');
     return;
   }
   
+  // Convert ID to clean string
   const cleanId = String(id).trim();
-  console.log('Navigating to edit employee with ID:', cleanId);
+  console.log('Editing employee with ID:', cleanId);
   
-  // Use router.push with object syntax for more reliable navigation
-  router.push({
-    name: "EditPegawai",
-    params: { id: cleanId }
-  });
+  // Force complete page reload with timestamp query parameter
+  const timestamp = Date.now();
+  const url = `/hcm/edit_pegawai/${cleanId}?ts=${timestamp}`;
+  
+  // This bypasses all Vue Router caching mechanisms
+  window.location.href = url;
 };
-// Improved view function with better error handling
+
 const onView = (id: string | number) => {
-  console.log('Viewing employee with ID:', id, 'Type:', typeof id);
-  
   if (!id) {
     showErrorToast('ID karyawan tidak valid');
     return;
   }
   
-  // Force clean string conversion
+  // Convert ID to clean string
   const cleanId = String(id).trim();
-  console.log('Clean ID for routing:', cleanId);
+  console.log('Viewing employee with ID:', cleanId);
   
-  // Navigate using route path instead of name for more reliability
-  router.push(`/hcm/detail_pegawai/${cleanId}`);
+  // Force complete page reload with timestamp query parameter
+  const timestamp = Date.now();
+  const url = `/hcm/detail_pegawai/${cleanId}?ts=${timestamp}`;
+  
+  // This bypasses all Vue Router caching mechanisms
+  window.location.href = url;
 };
 const onDelete = async (id: string | number) => {
   return await remove(`/employee/delete/${id}`);

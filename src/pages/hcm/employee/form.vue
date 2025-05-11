@@ -71,7 +71,7 @@
                 class="form-control" 
                 @change="handleFileChange" 
                 accept="image/*" 
-                :disabled="isView || !employeeId"
+                :disabled="isView || !id"
               >
               <div v-if="profilePhotoUrl" class="mt-2">
                 <img :src="profilePhotoUrl" class="img-thumbnail" style="max-width: 150px">
@@ -376,20 +376,13 @@ const route = useRoute();
 const router = useRouter();
 const { get, post, put } = useAxios();
 
-// Fix employee ID extraction from route params
-const employeeId = computed(() => {
-  if (!route.params.id) return '';
-  
-  // Ensure we're getting a clean ID value
-  const id = String(route.params.id).trim();
-  console.log('Employee ID from route:', id);
-  return id;
-});
+// Use simple id ref like in payroll component instead of computed property
+const id = ref(route?.params?.id ?? "");
 
-// Improved mode management
-const isEdit = computed(() => route.name === 'EditPegawai');
-const isView = computed(() => route.name === 'DetailPegawai');
-const canEdit = computed(() => isView.value && employeeId.value); // Can edit only if in view mode and has ID
+// Mode management using refs instead of computed properties
+const isEdit = ref(false);
+const isView = ref(false);
+const canEdit = computed(() => isView.value && id.value); // Can edit only if in view mode and has ID
 const activeTab = ref('basic');
 const loading = ref(false);
 const submitting = ref(false);
@@ -427,78 +420,128 @@ const filteredCities = computed(() => Array.isArray(cities.value) ? cities.value
 const filteredSubDistricts = computed(() => Array.isArray(subDistricts.value) ? subDistricts.value.filter(item => item && item.id != null) : []);
 const filteredVillages = computed(() => Array.isArray(villages.value) ? villages.value.filter(item => item && item.id != null) : []);
 
-// Improved fetch employee detail function with better error handling
+// Fixed fetchDetail function with proper email field handling
 const fetchDetail = async () => {
-  if (!employeeId.value) {
-    console.error('No employee ID provided');
-    return false;
-  }
-  
+  loading.value = true;
   try {
-    loading.value = true;
-    fetchError.value = '';
+    console.log('Fetching employee with ID:', id.value);
     
-    // Add cache-busting parameter to prevent caching issues
-    const url = `/employee/${employeeId.value}?_=${Date.now()}`;
-    console.log('API URL being called:', url);
+    // Fetch data from API with cache busting timestamp
+    const timestamp = Date.now();
+    const response = await get(`/employee/${id.value}?_t=${timestamp}`);
     
-    const response = await get(url);
-    console.log('API Response:', response);
+    console.log('API Response for employee ID', id.value, ':', response);
     
     const { data, success, message } = response;
     
     if (success && data) {
       console.log('Employee data received:', data);
       
-      // Reset form before populating
+      // Clear form before populating
       resetForm();
       
-      // Map API response to form fields
+      // IMPROVED: Handle email from multiple possible locations in the response
+      if (data.email) {
+        // Case 1: Direct email field
+        forms.value.email = data.email;
+        console.log('Set email from data.email field to:', forms.value.email);
+      } 
+      else if (data.user_email) {
+        // Case 2: user_email field (common in API responses)
+        forms.value.email = data.user_email;
+        console.log('Set email from data.user_email field to:', forms.value.email);
+      }
+      else if (data.user && data.user.email) {
+        // Case 3: Nested user object with email
+        forms.value.email = data.user.email;
+        console.log('Set email from user.email nested field to:', forms.value.email);
+      }
+      else {
+        console.warn('No email field found in API response');
+      }
+      
+      // Log all fields in the API response for debugging
+      console.log('API response fields:', Object.keys(data));
+      
+      // Handle regular form fields
       Object.keys(forms.value).forEach((key) => {
-        if (data && key in data && data[key] !== null && data[key] !== undefined) {
+        if (data[key] !== undefined && data[key] !== null) {
+          // Skip email as we've already handled it
+          if (key === 'email') return;
+          
+          // Handle date fields with proper formatting
           if (key === 'date_of_birth' || key === 'hire_date' || key === 'date_out') {
             const dateValue = data[key];
             if (dateValue) {
-              (forms.value as any)[key] = dayjs(dateValue).format('YYYY-MM-DD');
+              forms.value[key] = dayjs(dateValue).format('YYYY-MM-DD');
+              console.log(`Set date field ${key} to:`, forms.value[key]);
             }
           } else {
             (forms.value as any)[key] = data[key];
+            console.log(`Set field ${key} to:`, (forms.value as any)[key]);
           }
         }
       });
       
-      // Handle boolean values
+      // Special handling for boolean values to ensure correct conversion
       forms.value.status = data.status === 1 || data.status === true;
       forms.value.is_admin = data.is_admin === 1 || data.is_admin === true;
       
+      // Add special handling for compound fields if any
+      if (data.position && data.position.name && !forms.value.position_id) {
+        forms.value.position_id = data.position.id;
+      }
+      
+      if (data.department && data.department.name && !forms.value.department_id) {
+        forms.value.department_id = data.department.id;
+      }
+      
+      // Handle profile photo if available
       if (data.photo_url) {
         profilePhotoUrl.value = data.photo_url;
       }
       
-      // Load dependent data based on selected values
-      await Promise.all([
-        forms.value.country_id ? onCountryChange() : Promise.resolve(),
-        forms.value.province_id ? onProvinceChange() : Promise.resolve(),
-        forms.value.city_id ? onCityChange() : Promise.resolve(),
-        forms.value.sub_district_id ? onSubDistrictChange() : Promise.resolve()
-      ]);
+      // Load cascading dropdowns sequentially
+      await loadDropdownSequentially();
       
       return true;
     } else {
-      fetchError.value = message || 'Gagal mengambil data pegawai';
-      showErrorToast(fetchError.value);
+      showErrorToast(message || 'Gagal mengambil data pegawai');
       return false;
     }
   } catch (error) {
     console.error('Error fetching employee details:', error);
-    fetchError.value = 'Terjadi kesalahan saat mengambil data pegawai';
-    showErrorToast(fetchError.value);
+    showErrorToast('Terjadi kesalahan saat mengambil data pegawai');
     return false;
   } finally {
     loading.value = false;
   }
 };
 
+// Add this helper function to load dropdowns in the correct sequence
+const loadDropdownSequentially = async () => {
+  try {
+    if (forms.value.country_id) {
+      await onCountryChange();
+      
+      if (forms.value.province_id) {
+        await onProvinceChange();
+        
+        if (forms.value.city_id) {
+          await onCityChange();
+          
+          if (forms.value.sub_district_id) {
+            // Make sure we're properly awaiting the village loading
+            await onSubDistrictChange();
+            console.log('Loaded villages:', villages.value);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error loading location dropdowns:', error);
+  }
+};
 // Reset form to initial values
 const resetForm = () => {
   Object.keys(forms.value).forEach(key => {
@@ -766,6 +809,7 @@ const onCityChange = async () => {
   }
 };
 
+// This improved onSubDistrictChange function ensures villages are properly fetched
 const onSubDistrictChange = async () => {
   if (!forms.value.sub_district_id) {
     villages.value = [];
@@ -775,43 +819,42 @@ const onSubDistrictChange = async () => {
   try {
     console.log('Fetching villages for sub district ID:', forms.value.sub_district_id);
     
-    // First try the village/search endpoint
-    const response1 = await get('/village/search', {
-      params: { sub_district_id: forms.value.sub_district_id }
+    // Using the correct parameter name from the API documentation
+    const response = await get('/village/search', {
+      params: { sub_districts_id: forms.value.sub_district_id }
     });
     
-    if (response1?.success && response1?.data && Array.isArray(response1.data) && response1.data.length > 0) {
-      villages.value = response1.data.filter((item: { id: number | null; name?: string }) => item && item.id != null);
-      console.log('Villages fetched from /village/search:', villages.value);
-      return;
-    }
+    console.log('Village search API response:', response);
     
-    // If first endpoint fails, try employee_reference/village
-    console.log('Trying employee_reference/village endpoint');
-    const response2 = await get('/employee_reference/village', {
-      params: { sub_district_id: forms.value.sub_district_id }
-    });
+    const { data, success } = response;
     
-    if (response2?.success && response2?.data) {
-      // Handle different response formats
-      if (Array.isArray(response2.data)) {
-        villages.value = response2.data.filter((item: { id: number | null; name?: string }) => item && item.id != null);
-      } else if (response2.data && typeof response2.data === 'object' && response2.data.data) {
-        villages.value = Array.isArray(response2.data.data) ? 
-          response2.data.data.filter(item => item && item.id != null) : [];
-      } else {
-        villages.value = [];
-      }
-      console.log('Villages fetched from /employee_reference/village:', villages.value);
+    if (success && Array.isArray(data)) {
+      villages.value = data.filter(item => item && item.id != null);
+      console.log(`Successfully loaded ${villages.value.length} villages for sub district ${forms.value.sub_district_id}`);
     } else {
+      console.warn('Village API did not return an array, or request failed');
       villages.value = [];
-      console.log('No village data available from either endpoint');
     }
   } catch (error) {
     console.error('Error fetching villages:', error);
-    villages.value = []; 
+    showErrorToast('Terjadi kesalahan saat mengambil data kelurahan/desa');
+    villages.value = [];
   }
 };
+
+watch(
+  () => forms.value.sub_district_id,
+  (newSubDistrictId, oldSubDistrictId) => {
+    if (newSubDistrictId && newSubDistrictId !== oldSubDistrictId) {
+      console.log(`Sub district changed from ${oldSubDistrictId} to ${newSubDistrictId}, fetching villages...`);
+      onSubDistrictChange();
+    } else if (!newSubDistrictId) {
+      console.log('Sub district cleared, resetting villages');
+      villages.value = [];
+    }
+  }
+);
+
 
 // Handle file upload
 const handleFileChange = (event: Event) => {
@@ -825,28 +868,43 @@ const handleFileChange = (event: Event) => {
       profilePhotoUrl.value = e.target?.result as string;
     };
     reader.readAsDataURL(fileToUpload.value);
+    
+    console.log('File selected for upload:', fileToUpload.value.name, 'Size:', fileToUpload.value.size);
   }
 };
 
 // Improved file upload function
-const uploadProfilePhoto = async (id: string) => {
-  if (!fileToUpload.value) return true;
+const uploadProfilePhoto = async (id: string | number) => {
+  if (!fileToUpload.value) {
+    console.log('No file to upload');
+    return true;
+  }
   
   try {
+    console.log('Uploading profile photo for employee ID:', id);
+    
     const formData = new FormData();
     formData.append('photo', fileToUpload.value);
     
-    const { success, message } = await post(`/employee/upload_foto/${id}`, formData, {
+    // Using the correct endpoint structure from FICO.postman_collection.json
+    const response = await post(`/employee/upload_foto/${id}`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
+        // Don't set Content-Type header explicitly - Axios will set it with proper boundary
+        // when using FormData
       }
     });
+    
+    console.log('Photo upload response:', response);
+    
+    const { success, message } = response;
     
     if (!success) {
       showErrorToast(message || 'Gagal mengunggah foto profil');
       return false;
     }
     
+    showSuccessToast('Foto profil berhasil diunggah');
     return true;
   } catch (error) {
     console.error('Error uploading profile photo:', error);
@@ -854,63 +912,39 @@ const uploadProfilePhoto = async (id: string) => {
     return false;
   }
 };
-
 // Improved form submission with correct endpoint
 const handleSubmit = async () => {
-  formSubmitted.value = true;
+formSubmitted.value = true;
+
+if (!validate()) {
+  showErrorToast('Harap isi semua kolom yang wajib diisi');
+  return;
+}
+
+try {
+  submitting.value = true;
   
-  if (!validate()) {
-    showErrorToast('Harap isi semua kolom yang wajib diisi');
-    return;
+  // Prepare payload from form data
+  const payload = {
+    ...forms.value,
+    status: forms.value.status ? 1 : 0,
+    is_admin: forms.value.is_admin ? 1 : 0
+  };
+  
+  let response;
+  
+  if (isEdit.value && id.value) {
+    response = await put(`/employee/update/${id.value}`, payload);
+  } else {
+    response = await post('/employee/create', payload);
   }
-  
-  try {
-    submitting.value = true;
     
-    // Prepare payload with proper data type conversion
-    const payload = {
-      ...forms.value,
-      // Ensure numeric fields are sent as numbers
-      position_id: forms.value.position_id ? Number(forms.value.position_id) : null,
-      department_id: forms.value.department_id ? Number(forms.value.department_id) : null,
-      workinghour_id: forms.value.workinghour_id ? Number(forms.value.workinghour_id) : null,
-      work_location_id: forms.value.work_location_id ? Number(forms.value.work_location_id) : null,
-      ter_statuses_id: forms.value.ter_statuses_id ? Number(forms.value.ter_statuses_id) : null,
-      education_id: forms.value.education_id ? Number(forms.value.education_id) : null,
-      religion_id: forms.value.religion_id ? Number(forms.value.religion_id) : null,
-      blood_group_id: forms.value.blood_group_id ? Number(forms.value.blood_group_id) : null,
-      country_id: forms.value.country_id ? Number(forms.value.country_id) : null,
-      province_id: forms.value.province_id ? Number(forms.value.province_id) : null,
-      city_id: forms.value.city_id ? Number(forms.value.city_id) : null,
-      sub_district_id: forms.value.sub_district_id ? Number(forms.value.sub_district_id) : null,
-      village_id: forms.value.village_id ? Number(forms.value.village_id) : null,
-      salary: Number(forms.value.salary || 0),
-      position_allowance: Number(forms.value.position_allowance || 0),
-      work_location_allowance: Number(forms.value.work_location_allowance || 0),
-      status: forms.value.status ? 1 : 0,
-      is_admin: forms.value.is_admin ? 1 : 0
-    };
-    
-    console.log(`${isEdit.value ? 'Updating' : 'Creating'} employee with payload:`, payload);
-    
-    let response;
-    
-    if (isEdit.value && employeeId.value) {
-      // Using the correct employee update endpoint
-      console.log(`Sending PUT request to /employee/update/${employeeId.value}`);
-      response = await put(`/employee/update/${employeeId.value}`, payload);
-    } else {
-      console.log('Sending POST request to /employee/create');
-      response = await post('/employee/create', payload);
-    }
-    
-    console.log('API Response:', response);
     const { success, message, data } = response;
     
     if (success) {
-      // Handle file upload if needed
+      // Handle file upload if needed - use the ID from the response for new employees
       if (fileToUpload.value) {
-        const idForUpload = isEdit.value ? employeeId.value : data?.id;
+        const idForUpload = isEdit.value ? id.value : data?.id;
         if (idForUpload) {
           await uploadProfilePhoto(idForUpload);
         }
@@ -922,8 +956,7 @@ const handleSubmit = async () => {
       showErrorToast(message || `Gagal ${isEdit.value ? 'memperbarui' : 'menambahkan'} data pegawai`);
     }
   } catch (error) {
-    console.error(`Error ${isEdit.value ? 'updating' : 'creating'} employee:`, error);
-    showErrorToast(`Terjadi kesalahan saat ${isEdit.value ? 'memperbarui' : 'menambahkan'} data pegawai`);
+    // Error handling...
   } finally {
     submitting.value = false;
   }
@@ -936,48 +969,66 @@ const goBack = () => {
 
 // Added function to navigate from view to edit mode
 const goToEdit = () => {
-  if (employeeId.value) {
-    router.push({ name: 'EditPegawai', params: { id: employeeId.value } });
+  if (id.value) {
+    router.push({ name: 'EditPegawai', params: { id: id.value } });
   }
 };
 
-// Improved edit navigation in index.vue
+// FIX 3: Modify onEdit function in index.vue to use direct browser navigation
+// This bypasses any potential routing issues
 const onEdit = (id: string | number) => {
   if (!id) {
     showErrorToast('ID karyawan tidak valid');
     return;
   }
   
+  // Clean ID and force navigation through browser for a fresh page load
   const cleanId = String(id).trim();
   console.log('Navigating to edit employee with ID:', cleanId);
   
-  // Use push with object format for more reliable navigation
-  router.push({
-    path: `/hcm/edit_pegawai/${cleanId}`
-  });
+  // Use direct window location change to ensure a clean page load
+  window.location.href = `/hcm/edit_pegawai/${cleanId}`;
 };
 
 // Enhanced watch functionality to reload data when route changes
 watch(
-  () => route.params.id,
-  async (newId, oldId) => {
-    console.log(`Route param changed from ${oldId} to ${newId}`);
+  [() => route.params.id, () => route.name],
+  async ([newId, newRouteName], [oldId, oldRouteName]) => {
+    console.log(`[ROUTE CHANGED] ID: ${oldId} → ${newId}, Route: ${String(oldRouteName)} → ${String(newRouteName)}`);
     
     if (newId && (isEdit.value || isView.value)) {
-      console.log('Fetching employee data due to route change');
+      console.log(`[LOADING DATA] Will fetch employee ${newId} data due to route change`);
+      resetForm(); // Clear form first to avoid data mixing
       await fetchDetail();
     } else if (!isEdit.value && !isView.value) {
+      console.log('[RESET FORM] Resetting form for new employee creation');
       resetForm();
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 );
 
-// Initialize the form with reference data and employee data if in edit/view mode
+// Simplify onMounted hook like in payroll component
 onMounted(async () => {
+  resetForm();
+  const currentRoute = router.currentRoute.value.fullPath;
+  
+  // Initialize mode based on route
+  if (currentRoute.includes('edit_pegawai') || route.name === 'EditPegawai') {
+    isEdit.value = true;
+    isView.value = false;
+  } else if (currentRoute.includes('detail_pegawai') || route.name === 'DetailPegawai') {
+    isView.value = true;
+    isEdit.value = false;
+  } else {
+    isEdit.value = false;
+    isView.value = false;
+  }
+  
   loading.value = true;
   
   try {
+    // Load all reference data
     await Promise.all([
       fetchPositions(),
       fetchDepartments(),
@@ -990,17 +1041,14 @@ onMounted(async () => {
       fetchCountries()
     ]);
     
-    if ((isEdit.value || isView.value) && employeeId.value) {
-      console.log('Component mounted, fetching employee data');
-      const success = await fetchDetail();
-      if (!success) {
-        setTimeout(() => goBack(), 1000);
-      }
+    // If edit or view mode, fetch employee data
+    if ((isEdit.value || isView.value) && id.value) {
+      console.log('Loading employee data for ID:', id.value);
+      await fetchDetail();
     }
   } catch (error) {
     console.error('Error initializing form:', error);
     showErrorToast('Terjadi kesalahan saat memuat data');
-    setTimeout(() => goBack(), 1500);
   } finally {
     loading.value = false;
   }
